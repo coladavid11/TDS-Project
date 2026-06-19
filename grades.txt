@@ -1,0 +1,40 @@
+S001|CS101|Programming Fundamentals|3|A|Sem1-2024
+S001|MATH101|Calculus I|3|B+|Sem1-2024
+S001|DS201|Data Structures|3|A-|Sem2-2024
+S001|DB101|Database Systems|3|B|Sem2-2024
+S002|CS101|Programming Fundamentals|3|B|Sem1-2023
+S002|NET201|Computer Networks|3|A|Sem2-2023
+S002|WEB101|Web Development|3|A-|Sem1-2023
+S003|CS101|Programming Fundamentals|3|A|Sem1-2024
+S003|MATH101|Calculus I|3|A|Sem1-2024
+S003|DS201|Data Structures|3|B+|Sem2-2024
+S003|STAT201|Probability & Statistics|3|A-|Sem2-2024
+S003|DB101|Database Systems|3|B|Sem2-2024
+S004|CS101|Programming Fundamentals|3|C+|Sem1-2024
+S004|MATH101|Calculus I|3|C|Sem1-2024
+S004|DB101|Database Systems|3|B-|Sem2-2024
+S004|WEB101|Web Development|3|B|Sem2-2024
+S005|NET201|Computer Networks|3|B+|Sem1-2023
+S005|WEB101|Web Development|3|A|Sem1-2023
+S005|STAT201|Probability & Statistics|3|B|Sem2-2023
+S006|CS101|Programming Fundamentals|3|A-|Sem1-2023
+S006|DS201|Data Structures|3|A|Sem2-2023
+S006|NET201|Computer Networks|3|B|Sem2-2023
+S006|ALG301|Algorithm Design|3|A-|Sem1-2024
+S006|SE301|Software Engineering|3|B+|Sem1-2024
+S007|CS101|Programming Fundamentals|3|B+|Sem1-2024
+S007|MATH101|Calculus I|3|A-|Sem1-2024
+S007|DB101|Database Systems|3|A|Sem2-2024
+S007|WEB101|Web Development|3|B|Sem2-2024
+S008|NET201|Computer Networks|3|C+|Sem1-2024
+S008|WEB101|Web Development|3|B-|Sem1-2024
+S008|STAT201|Probability & Statistics|3|C|Sem2-2024
+S009|CS101|Programming Fundamentals|3|A|Sem1-2023
+S009|MATH101|Calculus I|3|B|Sem1-2023
+S009|DS201|Data Structures|3|A-|Sem2-2023
+S009|DB101|Database Systems|3|A|Sem2-2023
+S009|ALG301|Algorithm Design|3|B+|Sem1-2024
+S015|CS101|Programming Fundamentals|3|B|Sem1-2023
+S015|MATH101|Calculus I|3|C+|Sem1-2023
+S015|WEB101|Web Development|3|B+|Sem2-2023
+S015|SE301|Software Engineering|3|A-|Sem1-2024

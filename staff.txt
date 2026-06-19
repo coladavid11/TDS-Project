@@ -1,0 +1,4 @@
+ADM001|Dr. Rosnah Binti Yusof|Staff|admin123|CS Department|Lecturer
+ADM002|Encik Farid|Staff|registrar99|Registry|Registrar
+ADM003|Prof. Dr. Lim Teck|Staff|prof456|CS Department|Head of Department
+ADM004|Puan Siti Aminah|Staff|staff789|IT Department|Senior Lecturer

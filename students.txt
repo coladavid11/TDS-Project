@@ -1,0 +1,10 @@
+S001|Ali bin Ahmad|010101011234|ali@email.com|password123|0121234567|CS|March2024
+S002|Siti Nurhaliza|020202025678|siti@email.com|pass456|0137654321|IT|September2023
+S003|Tan Wei Meng|030303145567|weimeng@email.com|tan2024|0149998888|CS|March2024
+S004|Arun Kumar|011112109873|arun@email.com|arun789|0112233445|SE|March2024
+S005|Nur Aishah|021025016642|aishah@email.com|aishah99|0198887766|IT|September2023
+S006|Chong Jin Hao|000512074431|jinhao@email.com|chong123|0175554433|CS|September2023
+S007|Fatima Zahra|030819035512|fatima@email.com|zahra786|0164443322|SE|March2024
+S008|Lim Kitchener|020405089975|lim@email.com|kitchener1|0182221100|IT|March2024
+S009|Muhammad Rizwan|010909146673|rizwan@email.com|rizPC|0123334455|CS|September2023
+S015|Stephanie Wong|021230104452|steph@email.com|wong999|0157778899|SE|September2023

@@ -1,0 +1,9 @@
+CS101|Programming Fundamentals|3|Year1|CS
+MATH101|Calculus I|3|Year1|MATH
+DS201|Data Structures|3|Year2|CS
+ALG301|Algorithm Design|3|Year3|CS
+NET201|Computer Networks|3|Year2|IT
+DB101|Database Systems|3|Year1|CS
+SE301|Software Engineering|3|Year3|SE
+STAT201|Probability & Statistics|3|Year2|MATH
+WEB101|Web Development|3|Year1|IT
