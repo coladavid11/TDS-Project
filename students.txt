@@ -8,3 +8,4 @@ S007|Fatima Zahra|030819035512|fatima@email.com|zahra786|0164443322|SE|March2024
 S008|Lim Kitchener|020405089975|lim@email.com|kitchener1|0182221100|IT|March2024
 S009|Muhammad Rizwan|010909146673|rizwan@email.com|rizPC|0123334455|CS|September2023
 S015|Stephanie Wong|021230104452|steph@email.com|wong999|0157778899|SE|September2023
+S016|LIU JIUN LE|060203010343|LIU.JIUN.LE@student.mmu.edu.my|abc123|01123366716|IT|September2026
