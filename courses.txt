@@ -7,4 +7,4 @@ DB101|Database Systems|3|1|CS
 SE301|Software Engineering|3|3|SE
 STAT201|Probability & Statistics|3|2|MATH
 WEB101|Web Development|3|1|IT
-TDS4223|DATA STRUCTURE AND ALGORITHMS|2|1|IT
+TDS4223|DATA STRUC & ALGORITHMS|2|1|IT

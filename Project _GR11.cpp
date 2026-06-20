@@ -1,25 +1,16 @@
 /*
-=====================================================================
- STUDENT ACADEMIC RECORDS SYSTEM
+
+ Project title: STUDENT ACADEMIC RECORDS SYSTEM
  Subject : TDS4223 - Data Structures and Algorithms
  Group   : 11
  Members : LIU JIUN LE, TAN LE YONG, NG ZHE JUN, ANG QI YANG, LIM MING XUAN
- Compiler: Dev C++ (Windows) - uses system("cls") for screen clearing
-=====================================================================
- PHASE 1 BUILD NOTE:
- This file currently contains the full menu navigation skeleton only.
- Student/Staff classes, structs, the GradeLinkedList (DNP structure),
- quickSort(), binarySearch(), and all 6 .txt file read/write routines
- will be added on top of this skeleton in the next build phase.
- Every screen function below already calls clearScreen() so each
- menu page opens on a clean console, per project requirement.
-=====================================================================
+
 */
 
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstdlib>    // for system()
+#include <cstdlib>    // for system(), function clearScreen()
 #include <stdexcept>  // for runtime_error (try/catch demonstration)
 #include <iomanip>    // for setw() and setprecision() in report formatting
 using namespace std;
