@@ -148,6 +148,18 @@ bool isValidPhone(string phone) {
     return isAllDigits(phone) && (int)phone.length() >= 9 && (int)phone.length() < 12;
 }
 
+// EMAIL RULE: must contain exactly one '@' symbol, and it cannot
+// be the first or last character of the email address.
+// This is a simple validation for the Student Management System.
+bool isValidEmail(string email)
+{
+    size_t atPos = email.find('@');
+
+    return atPos != string::npos &&
+           atPos > 0 &&
+           atPos < email.length() - 1;
+}
+
 // Converts "SemX-YYYY" into a single comparable integer key, e.g.
 // "Sem1-2024" -> 20241. Used for sorting grade records by semester
 // without needing any date library.
@@ -2111,79 +2123,90 @@ void editStudentScreen() {
         pauseScreen();
         return;
     }
-
-    studentArray[idx]->displayProfile();
-
-    cout << "\n1. Edit Name" << endl;
-    cout << "2. Edit Program" << endl;
-    cout << "3. Edit Phone" << endl;
-    cout << "4. Edit Email" << endl;
-    cout << "0. Back (cancel edit)" << endl;
-    cout << "Enter your choice: ";
-    int choice = readIntInput();
-
-    switch (choice) {
-        case 1: {
-            string newName;
-            cout << "Enter new Name: ";
-            cin.ignore();
-            getline(cin, newName);
-            studentArray[idx]->setName(newName);
-            cout << "Name updated." << endl;
-            break;
-        }
-        case 2: {
-            string newProgram;
-            cout << "Enter new Program: ";
-            cin >> newProgram;
-            studentArray[idx]->setProgram(newProgram);
-            cout << "Program updated." << endl;
-            break;
-        }
-        case 3: {
-            string newPhone;
-            int attempts = 0;
-            bool cancelled = false;
-            do {
-                cout << "Enter new Phone (numeric, below 12 digits, or 0 to cancel): ";
-                cin >> newPhone;
-                if (newPhone == "0") { cancelled = true; break; }
-                attempts++;
-                if (!isValidPhone(newPhone)) {
-                    cout << "Invalid phone number." << endl;
-                    if (attempts >= 5) {
-                        cout << "Too many invalid attempts. Edit cancelled." << endl;
-                        pauseScreen();
-                        return;
-                    }
-                }
-            } while (!isValidPhone(newPhone));
-            if (cancelled) { 
-             return; 
-            }
-            studentArray[idx]->setPhone(newPhone);
-            cout << "Phone updated." << endl;
-            break;
-        }
-        case 4: {
-            string newEmail;
-            cout << "Enter new Email: ";
-            cin >> newEmail;
-            studentArray[idx]->setEmail(newEmail);
-            cout << "Email updated." << endl;
-            break;
-        }
-        case 0:
-            
-            return;
-        default:
-            cout << "Invalid choice." << endl;
-            
-            return;
-    }
-
-    rewriteStudentsFile();
     
+    while (true)
+    {
+	    studentArray[idx]->displayProfile();
+	
+	    cout << "\n1. Edit Name" << endl;
+	    cout << "2. Edit Program" << endl;
+	    cout << "3. Edit Phone" << endl;
+	    cout << "4. Edit Email" << endl;
+	    cout << "0. Back (cancel edit)" << endl;
+	    cout << "Enter your choice: ";
+	    int choice = readIntInput();
+	
+	    switch (choice) {
+	        case 1: {
+	            string newName;
+	            cout << "Enter new Name: ";
+	            cin.ignore();
+	            getline(cin, newName);
+	            studentArray[idx]->setName(newName);
+	            cout << "Name updated." << endl;
+	            break;
+	        }
+	        case 2: {
+	            string newProgram;
+	            cout << "Enter new Program: ";
+	            cin >> newProgram;
+	            studentArray[idx]->setProgram(newProgram);
+	            cout << "Program updated." << endl;
+	            break;
+	        }
+	        case 3: {
+	            string newPhone;
+	            int attempts = 0;
+	            bool cancelled = false;
+	            do {
+	                cout << "Enter new Phone (numeric, below 12 digits, or 0 to cancel): ";
+	                cin >> newPhone;
+	                if (newPhone == "0") { cancelled = true; break; }
+	                attempts++;
+	                if (!isValidPhone(newPhone)) {
+	                    cout << "Invalid phone number." << endl;
+	                    if (attempts >= 5) {
+	                        cout << "Too many invalid attempts. Edit cancelled." << endl;
+	                        pauseScreen();
+	                        break;
+	                    }
+	                }
+	            } while (!isValidPhone(newPhone));
+	            if (cancelled) { 
+	             break; 
+	            }
+	            studentArray[idx]->setPhone(newPhone);
+	            cout << "Phone updated." << endl;
+	            break;
+	        }
+	        case 4: {
+	            string newEmail;
+	            do{
+	            	cout << "Enter new Email: ";
+	            	cin >> newEmail;
+	            	
+	            	if(!isValidEmail(newEmail))
+	            	cout<<"Invalid email format."<<endl;
+				}while(!isValidEmail(newEmail));
+				
+	            studentArray[idx]->setEmail(newEmail);
+	            cout << "Email updated." << endl;
+	            break;
+	        }
+	        case 0:
+	            return;
+	        default:
+	            cout << "Invalid choice." << endl;
+	            
+	            continue;
+	    }
+	
+	    rewriteStudentsFile();
+	    
+	    cout<<"\nUpdated Student Information:\n";
+	    
+	    pauseScreen();
+    }
 }
 
 void deleteStudentScreen() {
