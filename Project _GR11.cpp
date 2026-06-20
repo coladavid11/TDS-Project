@@ -29,6 +29,7 @@ using namespace std;
 // =====================================================================
 const int MAX_STUDENTS = 100;
 const int MAX_COURSES  = 50;
+const int MAX_STAFF    = 20;
 const int MAX_TEMP_GRADES = 100; // scratch array size for sort/search extraction
 
 // =====================================================================
@@ -231,6 +232,7 @@ public:
     string getEmail() const;
     string getPassword() const;
 
+    void setName(string n);
     void setPhone(string p);
     void setEmail(string e);
     void setPassword(string p);
@@ -273,6 +275,7 @@ string Person::getPassword() const { return password; }
 void Person::setPhone(string p)    { contact.phone = p; }
 void Person::setEmail(string e)    { contact.email = e; }
 void Person::setPassword(string p) { password = p; }
+void Person::setName(string n)     { name = n; }
 
 bool validatePassword(Person &p, string inputPassword) {
     return p.password == inputPassword; // friend accessing protected member directly
@@ -409,6 +412,7 @@ public:
 
     void insert(GradeEntry e);
     bool removeByCourse(string code);
+    bool updateGradeByCourse(string code, string newGrade);
     void displayAll();
     bool isEmpty() const;
     int getCount() const;
@@ -474,6 +478,18 @@ bool GradeLinkedList::removeByCourse(string code) {
     return false;
 }
 
+bool GradeLinkedList::updateGradeByCourse(string code, string newGrade) {
+    GradeNode* current = head;
+    while (current != nullptr) {
+        if (current->data.getCourseCode() == code) {
+            current->data.setGrade(newGrade);
+            return true;
+        }
+        current = current->next;
+    }
+    return false;
+}
+
 void GradeLinkedList::displayAll() {
     if (head == nullptr) {
         cout << "No grade records found." << endl;
@@ -525,6 +541,7 @@ public:
     string getProgram() const;
     string getIC() const;
     string getIntake() const;
+    void setProgram(string p);
 };
 
 Student::Student() : Person() {
@@ -568,6 +585,75 @@ GradeLinkedList* Student::getGradeList() { return gradeList; }
 string Student::getProgram() const       { return program; }
 string Student::getIC() const            { return ic; }
 string Student::getIntake() const        { return intake; }
+void Student::setProgram(string p)       { program = p; }
+
+// =====================================================================
+// DERIVED CLASS 3: Staff (inherits Person)
+// =====================================================================
+class Staff : public Person {
+private:
+    string role;
+    string department;
+    string position;
+public:
+    Staff();
+    Staff(string id, string name, string password, string role, string department, string position);
+    ~Staff();
+
+    bool login(string inputID, string inputPassword) override;
+    void displayProfile() override;
+
+    string getRole() const;
+    string getDepartment() const;
+    string getPosition() const;
+
+    friend void printStaffDetails(Staff &s); // additional friend function
+};
+
+Staff::Staff() : Person() {
+    role = "";
+    department = "";
+    position = "";
+}
+
+Staff::Staff(string id, string name, string password, string role, string department, string position)
+    : Person(id, name, password, "", "") {
+    this->role = role;
+    this->department = department;
+    this->position = position;
+}
+
+Staff::~Staff() {
+    // nothing dynamic owned by Staff - no cleanup needed
+}
+
+bool Staff::login(string inputID, string inputPassword) {
+    return (getID() == inputID) && validatePassword(*this, inputPassword);
+}
+
+void Staff::displayProfile() {
+    cout << "-----------------------------------" << endl;
+    cout << "Staff ID   : " << getID() << endl;
+    cout << "Name       : " << getName() << endl;
+    cout << "Role       : " << role << endl;
+    cout << "Department : " << department << endl;
+    cout << "Position   : " << position << endl;
+    cout << "-----------------------------------" << endl;
+}
+
+string Staff::getRole() const       { return role; }
+string Staff::getDepartment() const { return department; }
+string Staff::getPosition() const   { return position; }
+
+void printStaffDetails(Staff &s) {
+    cout << left
+         << setw(10) << s.id
+         << setw(20) << s.name
+         << setw(12) << s.role
+         << setw(18) << s.department
+         << setw(18) << s.position
+         << endl;
+}
 
 // =====================================================================
 // GLOBAL DATA STORES (fixed-size arrays - no STL containers)
@@ -577,6 +663,31 @@ int studentCount = 0;
 
 Course courseArray[MAX_COURSES];
 int courseCount = 0;
+
+Staff* staffArray[MAX_STAFF];
+int staffCount = 0;
+
+// Computes a student's cumulative GPA on a 4.0 scale from their grade
+// list, excluding "Pending" entries. Shared by the sort, search, and
+// report features so the calculation only lives in one place.
+double calculateStudentGPA(Student* s) {
+    GradeEntry tempArr[MAX_TEMP_GRADES];
+    int n = 0;
+    s->getGradeList()->toArray(tempArr, n);
+
+    double totalPoints = 0.0;
+    int totalCredits = 0;
+
+    for (int i = 0; i < n; i++) {
+        double gpaPoint = gradeToGPA(tempArr[i].getGrade());
+        if (gpaPoint >= 0.0) {
+            totalPoints += gpaPoint * tempArr[i].getCredit();
+            totalCredits += tempArr[i].getCredit();
+        }
+    }
+
+    return (totalCredits > 0) ? (totalPoints / totalCredits) : 0.0;
+}
 
 // =====================================================================
 // SORTING ALGORITHM: Quick Sort (manually implemented)
@@ -656,6 +767,46 @@ void quickSort(Course arr[], int low, int high) {
     }
 }
 
+int partitionStudentsByGPA(Student* arr[], int low, int high) {
+    double pivot = calculateStudentGPA(arr[high]);
+    int i = low - 1;
+    for (int j = low; j < high; j++) {
+        if (calculateStudentGPA(arr[j]) >= pivot) { // descending: highest GPA first
+            i++;
+            Student* temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+        }
+    }
+    Student* temp = arr[i + 1]; arr[i + 1] = arr[high]; arr[high] = temp;
+    return i + 1;
+}
+
+int partitionStudentsByID(Student* arr[], int low, int high) {
+    string pivot = arr[high]->getID();
+    int i = low - 1;
+    for (int j = low; j < high; j++) {
+        if (arr[j]->getID() <= pivot) { // ascending
+            i++;
+            Student* temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+        }
+    }
+    Student* temp = arr[i + 1]; arr[i + 1] = arr[high]; arr[high] = temp;
+    return i + 1;
+}
+
+// Overload: sorts a Student*[] array. sortKey accepts "GPA" or "ID".
+void quickSort(Student* arr[], int low, int high, string sortKey) {
+    if (low < high) {
+        int pi;
+        if (sortKey == "GPA") {
+            pi = partitionStudentsByGPA(arr, low, high);
+        } else {
+            pi = partitionStudentsByID(arr, low, high);
+        }
+        quickSort(arr, low, pi - 1, sortKey);
+        quickSort(arr, pi + 1, high, sortKey);
+    }
+}
+
 // =====================================================================
 // SEARCHING ALGORITHM: Binary Search (manually implemented)
 // Overloaded for GradeEntry[] and Course[]
@@ -682,6 +833,17 @@ int binarySearch(Course arr[], int size, string targetCode) {
     return -1;
 }
 
+int binarySearch(Student* arr[], int size, string targetID) {
+    int low = 0, high = size - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (arr[mid]->getID() == targetID) return mid;
+        else if (arr[mid]->getID() < targetID) low = mid + 1;
+        else high = mid - 1;
+    }
+    return -1;
+}
+
 // =====================================================================
 // LOOKUP HELPERS (linear scans - utility only, NOT the graded search feature)
 // =====================================================================
@@ -695,6 +857,13 @@ int findStudentIndexByID(string id) {
 int findCourseIndexByCode(string code) {
     for (int i = 0; i < courseCount; i++) {
         if (courseArray[i].code == code) return i;
+    }
+    return -1;
+}
+
+int findStaffIndexByID(string id) {
+    for (int i = 0; i < staffCount; i++) {
+        if (staffArray[i]->getID() == id) return i;
     }
     return -1;
 }
@@ -777,6 +946,26 @@ void loadGradesFromFile() {
     inFile.close();
 }
 
+void loadStaffFromFile() {
+    ifstream inFile("staff.txt");
+    if (!inFile) {
+        cout << "Warning: staff.txt not found. Starting with no staff accounts." << endl;
+        return;
+    }
+    staffCount = 0;
+    string line;
+    while (getline(inFile, line) && staffCount < MAX_STAFF) {
+        if (line.length() == 0) continue;
+        string fields[6];
+        splitLine(line, fields, 6, '|');
+        // fields: 0 StaffID,1 Name,2 Role,3 Password,4 Department,5 Position
+        staffArray[staffCount] = new Staff(fields[0], fields[1], fields[3], fields[2],
+                                            fields[4], fields[5]);
+        staffCount++;
+    }
+    inFile.close();
+}
+
 // =====================================================================
 // FILE I/O - SAVING
 // =====================================================================
@@ -847,6 +1036,51 @@ void rewriteGradesFile() {
     outFile.close();
 }
 
+void appendCourseToFile(Course c) {
+    // Same trailing-newline safety check used for students.txt - courses.txt
+    // may not end with a newline either.
+    bool needsLeadingNewline = false;
+    ifstream checkFile("courses.txt");
+    if (checkFile) {
+        checkFile.seekg(0, ios::end);
+        long fileSize = (long)checkFile.tellg();
+        if (fileSize > 0) {
+            checkFile.seekg(-1, ios::end);
+            char lastChar = '\0';
+            checkFile.get(lastChar);
+            if (lastChar != '\n') {
+                needsLeadingNewline = true;
+            }
+        }
+    }
+    checkFile.close();
+
+    ofstream outFile("courses.txt", ios::app);
+    if (!outFile) {
+        cout << "Error: could not open courses.txt for writing." << endl;
+        return;
+    }
+    if (needsLeadingNewline) {
+        outFile << endl;
+    }
+    outFile << c.code << "|" << c.name << "|" << c.credit << "|" << c.year << "|" << c.department << endl;
+    outFile.close();
+}
+
+void rewriteCoursesFile() {
+    ofstream outFile("courses.txt");
+    if (!outFile) {
+        cout << "Error: could not open courses.txt for writing." << endl;
+        return;
+    }
+    for (int i = 0; i < courseCount; i++) {
+        outFile << courseArray[i].code << "|" << courseArray[i].name << "|"
+                << courseArray[i].credit << "|" << courseArray[i].year << "|"
+                << courseArray[i].department << endl;
+    }
+    outFile.close();
+}
+
 void generateStudentReport(Student* s) {
     GradeEntry tempArr[MAX_TEMP_GRADES];
     int n = 0;
@@ -913,6 +1147,13 @@ void cleanupStudents() {
     }
 }
 
+void cleanupStaff() {
+    for (int i = 0; i < staffCount; i++) {
+        delete staffArray[i];
+        staffArray[i] = nullptr;
+    }
+}
+
 // =====================================================================
 // FUNCTION PROTOTYPES - MAIN MENU LEVEL
 // =====================================================================
@@ -947,9 +1188,11 @@ void sortStudentsScreen();
 void searchStudentScreen();
 void generateAdminReportScreen();
 void viewAdminReportScreen();
+void viewAllStudentsScreen();
 void addStudentScreen();
 void editStudentScreen();
 void deleteStudentScreen();
+void viewAllCoursesScreen();
 void addCourseScreen();
 void editCourseScreen();
 void deleteCourseScreen();
@@ -964,10 +1207,12 @@ int main() {
     loadCoursesFromFile();
     loadStudentsFromFile();
     loadGradesFromFile();
+    loadStaffFromFile();
 
     showMainMenu();
 
     cleanupStudents();
+    cleanupStaff();
     return 0;
 }
 
@@ -1487,6 +1732,15 @@ void editPendingEnrollmentScreen(string studentID) {
 void dropCourseScreen(string studentID) {
     clearScreen();
     cout << "============ DROP A COURSE ============" << endl;
+    cout<< "Note: You can only drop courses that are currently in your records." << endl;
+    cout<<left
+        << setw(12) << "Student ID"
+        << setw(12) << "Code"
+        << setw(35) << "Course Name"
+        << setw(8)  << "Credit"
+        << setw(10) << "Grade"
+        << setw(15) << "Semester" << endl;
+        cout << "-------------------------------------------------------------------------------------" << endl;
 
     int idx = findStudentIndexByID(studentID);
     if (idx == -1) {
@@ -1555,17 +1809,33 @@ void staffLoginScreen() {
     cout << "============ STAFF/ADMIN LOGIN ============" << endl;
 
     string id, password;
-    cout << "Enter Staff ID: ";
+    cout << "Enter Staff ID (or 0 to cancel): ";
     cin >> id;
+
+    if (id == "0") {
+        return;
+    }
+
     cout << "Enter Password: ";
     cin >> password;
 
-    cout << "=============================================" << endl;
-    cout << "[Placeholder] Staff login validation not yet implemented." << endl;
-    cout << "Proceeding to Staff Menu for testing purposes..." << endl;
-    pauseScreen();
+    try {
+        int idx = findStaffIndexByID(id);
+        if (idx == -1) {
+            throw runtime_error("Staff ID not found.");
+        }
+        if (!staffArray[idx]->login(id, password)) {
+            throw runtime_error("Incorrect password.");
+        }
 
-    staffMenuScreen(id, "Placeholder Staff Name");
+        cout << "Login successful!" << endl;
+        pauseScreen();
+        staffMenuScreen(staffArray[idx]->getID(), staffArray[idx]->getName());
+    }
+    catch (runtime_error &e) {
+        cout << "Login failed: " << e.what() << endl;
+        pauseScreen();
+    }
 }
 
 // =====================================================================
@@ -1587,7 +1857,7 @@ void staffMenuScreen(string staffID, string staffName) {
         cout << "5. Search Student Record" << endl;
         cout << "6. Generate Department Report" << endl;
         cout << "7. View Saved Report" << endl;
-        cout << "8. Logout" << endl;
+        cout << "0. Logout" << endl;
         cout << "===========================================" << endl;
         cout << "Enter your choice: ";
         choice = readIntInput();
@@ -1600,7 +1870,7 @@ void staffMenuScreen(string staffID, string staffName) {
             case 5: searchStudentScreen();       break;
             case 6: generateAdminReportScreen(); break;
             case 7: viewAdminReportScreen();     break;
-            case 8: inStaffMenu = false;         break;
+            case 0: inStaffMenu = false;         break;
             default:
                 cout << "Invalid choice." << endl;
                 pauseScreen();
@@ -1618,20 +1888,16 @@ void manageStudentsScreen() {
         cout << "2. Add New Student" << endl;
         cout << "3. Edit Student Details" << endl;
         cout << "4. Delete Student" << endl;
-        cout << "5. Back" << endl;
+        cout << "0. Back" << endl;
         cout << "=======================================" << endl;
         cout << "Enter your choice: ";
         choice = readIntInput();
         switch (choice) {
-            case 1:
-                clearScreen();
-                cout << "[Placeholder] Will display all Student records." << endl;
-                pauseScreen();
-                break;
-            case 2: addStudentScreen();    break;
-            case 3: editStudentScreen();   break;
-            case 4: deleteStudentScreen(); break;
-            case 5: inSubMenu = false;     break;
+            case 1: viewAllStudentsScreen(); break;
+            case 2: addStudentScreen();      break;
+            case 3: editStudentScreen();     break;
+            case 4: deleteStudentScreen();   break;
+            case 0: inSubMenu = false;       break;
             default:
                 cout << "Invalid choice." << endl;
                 pauseScreen();
@@ -1639,24 +1905,268 @@ void manageStudentsScreen() {
     }
 }
 
+void viewAllStudentsScreen() {
+    clearScreen();
+    cout << "============ ALL STUDENT RECORDS ============" << endl;
+
+    if (studentCount == 0) {
+        cout << "No student records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << left
+         << setw(8)  << "ID"
+         << setw(20) << "Name"
+         << setw(10) << "Program"
+         << setw(15) << "Phone"
+         << setw(25) << "Email"
+         << endl;
+    cout << "----------------------------------------------------------------------" << endl;
+
+    for (int i = 0; i < studentCount; i++) {
+        cout << left
+             << setw(8)  << studentArray[i]->getID()
+             << setw(20) << studentArray[i]->getName()
+             << setw(10) << studentArray[i]->getProgram()
+             << setw(15) << studentArray[i]->getPhone()
+             << setw(25) << studentArray[i]->getEmail()
+             << endl;
+    }
+
+    pauseScreen();
+}
+
 void addStudentScreen() {
     clearScreen();
     cout << "========= ADD NEW STUDENT =========" << endl;
-    cout << "[Placeholder] Will append new record to students.txt" << endl;
+
+    if (studentCount >= MAX_STUDENTS) {
+        cout << "Student record list is full." << endl;
+        pauseScreen();
+        return;
+    }
+
+    try {
+        string name, ic, email, password, phone, program;
+
+        cout << "Enter Name (or 0 to cancel): ";
+        cin.ignore();
+        getline(cin, name);
+
+        if (name == "0") {
+            cout << "Cancelled." << endl;
+            pauseScreen();
+            return;
+        }
+
+        int icAttempts = 0;
+        do {
+            cout << "Enter IC Number (must be exactly 12 digits, or 0 to cancel): ";
+            cin >> ic;
+            if (ic == "0") { cout << "Cancelled." << endl; pauseScreen(); return; }
+            icAttempts++;
+            if (!isValidIC(ic)) {
+                cout << "Invalid IC number. It must contain exactly 12 digits." << endl;
+                if (icAttempts >= 5) {
+                    throw runtime_error("Too many invalid IC attempts. Operation cancelled.");
+                }
+            }
+        } while (!isValidIC(ic));
+
+        cout << "Enter Email: ";
+        cin >> email;
+
+        cout << "Enter Password: ";
+        cin >> password;
+
+        int phoneAttempts = 0;
+        do {
+            cout << "Enter Phone Number (numeric, below 12 digits, or 0 to cancel): ";
+            cin >> phone;
+            if (phone == "0") { cout << "Cancelled." << endl; pauseScreen(); return; }
+            phoneAttempts++;
+            if (!isValidPhone(phone)) {
+                cout << "Invalid phone number. Must be numeric and below 12 digits." << endl;
+                if (phoneAttempts >= 5) {
+                    throw runtime_error("Too many invalid phone attempts. Operation cancelled.");
+                }
+            }
+        } while (!isValidPhone(phone));
+
+        cout << "Enter Program (CS/IT/SE): ";
+        cin >> program;
+
+        string newID = generateNextStudentID();
+        string intake = "September2026";
+
+        studentArray[studentCount] = new Student(newID, name, password, ic, phone, email, program, intake);
+        studentCount++;
+        appendStudentToFile(studentArray[studentCount - 1]);
+
+        cout << "=========================================" << endl;
+        cout << "Student added successfully! New Student ID: " << newID << endl;
+        cout << "=========================================" << endl;
+    }
+    catch (runtime_error &e) {
+        cout << "Operation failed: " << e.what() << endl;
+    }
+
     pauseScreen();
 }
 
 void editStudentScreen() {
     clearScreen();
     cout << "======== EDIT STUDENT DETAILS ========" << endl;
-    cout << "[Placeholder] Will edit a Student record and rewrite students.txt" << endl;
+
+    if (studentCount == 0) {
+        cout << "No student records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Student ID to edit (or 0 to cancel): ";
+    string id;
+    cin >> id;
+
+    if (id == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    int idx = findStudentIndexByID(id);
+    if (idx == -1) {
+        cout << "Student ID not found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    studentArray[idx]->displayProfile();
+
+    cout << "\n1. Edit Name" << endl;
+    cout << "2. Edit Program" << endl;
+    cout << "3. Edit Phone" << endl;
+    cout << "4. Edit Email" << endl;
+    cout << "0. Back (cancel edit)" << endl;
+    cout << "Enter your choice: ";
+    int choice = readIntInput();
+
+    switch (choice) {
+        case 1: {
+            string newName;
+            cout << "Enter new Name: ";
+            cin.ignore();
+            getline(cin, newName);
+            studentArray[idx]->setName(newName);
+            cout << "Name updated." << endl;
+            break;
+        }
+        case 2: {
+            string newProgram;
+            cout << "Enter new Program: ";
+            cin >> newProgram;
+            studentArray[idx]->setProgram(newProgram);
+            cout << "Program updated." << endl;
+            break;
+        }
+        case 3: {
+            string newPhone;
+            int attempts = 0;
+            bool cancelled = false;
+            do {
+                cout << "Enter new Phone (numeric, below 12 digits, or 0 to cancel): ";
+                cin >> newPhone;
+                if (newPhone == "0") { cancelled = true; break; }
+                attempts++;
+                if (!isValidPhone(newPhone)) {
+                    cout << "Invalid phone number." << endl;
+                    if (attempts >= 5) {
+                        cout << "Too many invalid attempts. Edit cancelled." << endl;
+                        pauseScreen();
+                        return;
+                    }
+                }
+            } while (!isValidPhone(newPhone));
+            if (cancelled) { cout << "Cancelled." << endl; pauseScreen(); return; }
+            studentArray[idx]->setPhone(newPhone);
+            cout << "Phone updated." << endl;
+            break;
+        }
+        case 4: {
+            string newEmail;
+            cout << "Enter new Email: ";
+            cin >> newEmail;
+            studentArray[idx]->setEmail(newEmail);
+            cout << "Email updated." << endl;
+            break;
+        }
+        case 0:
+            cout << "Cancelled." << endl;
+            pauseScreen();
+            return;
+        default:
+            cout << "Invalid choice." << endl;
+            pauseScreen();
+            return;
+    }
+
+    rewriteStudentsFile();
     pauseScreen();
 }
 
 void deleteStudentScreen() {
     clearScreen();
     cout << "============ DELETE STUDENT ============" << endl;
-    cout << "[Placeholder] Will remove a Student record and rewrite students.txt" << endl;
+
+    if (studentCount == 0) {
+        cout << "No student records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Student ID to delete (or 0 to cancel): ";
+    string id;
+    cin >> id;
+
+    if (id == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    int idx = findStudentIndexByID(id);
+    if (idx == -1) {
+        cout << "Student ID not found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "\nAre you sure you want to delete this student record?" << endl;
+    studentArray[idx]->displayProfile();
+    cout << "1. Yes, delete" << endl;
+    cout << "0. No, cancel" << endl;
+    cout << "Enter your choice: ";
+    int confirm = readIntInput();
+
+    if (confirm != 1) {
+        cout << "Deletion cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    delete studentArray[idx]; // dynamic memory operation: delete
+
+    for (int i = idx; i < studentCount - 1; i++) {
+        studentArray[i] = studentArray[i + 1];
+    }
+    studentArray[studentCount - 1] = nullptr;
+    studentCount--;
+
+    rewriteStudentsFile();
+    rewriteGradesFile(); // removes the deleted student's grade rows too
+
+    cout << "Student deleted successfully." << endl;
     pauseScreen();
 }
 
@@ -1670,20 +2180,16 @@ void manageCoursesScreen() {
         cout << "2. Add New Course" << endl;
         cout << "3. Edit Course Details" << endl;
         cout << "4. Delete Course" << endl;
-        cout << "5. Back" << endl;
+        cout << "0. Back" << endl;
         cout << "======================================" << endl;
         cout << "Enter your choice: ";
         choice = readIntInput();
         switch (choice) {
-            case 1:
-                clearScreen();
-                cout << "[Placeholder] Will display all Course records." << endl;
-                pauseScreen();
-                break;
-            case 2: addCourseScreen();    break;
-            case 3: editCourseScreen();   break;
-            case 4: deleteCourseScreen(); break;
-            case 5: inSubMenu = false;    break;
+            case 1: viewAllCoursesScreen(); break;
+            case 2: addCourseScreen();      break;
+            case 3: editCourseScreen();     break;
+            case 4: deleteCourseScreen();   break;
+            case 0: inSubMenu = false;      break;
             default:
                 cout << "Invalid choice." << endl;
                 pauseScreen();
@@ -1691,24 +2197,198 @@ void manageCoursesScreen() {
     }
 }
 
+void viewAllCoursesScreen() {
+    clearScreen();
+    cout << "============ ALL COURSE RECORDS ============" << endl;
+
+    if (courseCount == 0) {
+        cout << "No course records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << left
+         << setw(10) << "Code"
+         << setw(28) << "Course Name"
+         << setw(8)  << "Credit"
+         << setw(8)  << "Year"
+         << setw(10) << "Dept"
+         << endl;
+    cout << "----------------------------------------------------------------------" << endl;
+
+    for (int i = 0; i < courseCount; i++) {
+        cout << left
+             << setw(10) << courseArray[i].code
+             << setw(28) << courseArray[i].name
+             << setw(8)  << courseArray[i].credit
+             << setw(8)  << courseArray[i].year
+             << setw(10) << courseArray[i].department
+             << endl;
+    }
+
+    pauseScreen();
+}
+
 void addCourseScreen() {
     clearScreen();
     cout << "========= ADD NEW COURSE =========" << endl;
-    cout << "[Placeholder] Will append new record to courses.txt" << endl;
+
+    if (courseCount >= MAX_COURSES) {
+        cout << "Course catalog is full." << endl;
+        pauseScreen();
+        return;
+    }
+
+    Course c;
+    cout << "Enter Course Code (or 0 to cancel): ";
+    cin >> c.code;
+
+    if (c.code == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    if (findCourseIndexByCode(c.code) != -1) {
+        cout << "A course with this code already exists." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Course Name: ";
+    cin.ignore();
+    getline(cin, c.name);
+
+    cout << "Enter Credit Hours: ";
+    c.credit = readIntInput();
+
+    cout << "Enter Year (e.g. Year1): ";
+    cin >> c.year;
+
+    cout << "Enter Department: ";
+    cin >> c.department;
+
+    courseArray[courseCount] = c;
+    courseCount++;
+    appendCourseToFile(c);
+
+    cout << "Course added successfully." << endl;
     pauseScreen();
 }
 
 void editCourseScreen() {
     clearScreen();
     cout << "======== EDIT COURSE DETAILS ========" << endl;
-    cout << "[Placeholder] Will edit a Course record and rewrite courses.txt" << endl;
+
+    if (courseCount == 0) {
+        cout << "No course records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Course Code to edit (or 0 to cancel): ";
+    string code;
+    cin >> code;
+
+    if (code == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    int idx = findCourseIndexByCode(code);
+    if (idx == -1) {
+        cout << "Course code not found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "\nCurrent details: " << courseArray[idx].code << " - " << courseArray[idx].name
+         << " (" << courseArray[idx].credit << " credit(s))" << endl;
+
+    cout << "1. Edit Course Name" << endl;
+    cout << "2. Edit Credit Hours" << endl;
+    cout << "3. Edit Department" << endl;
+    cout << "0. Back (cancel edit)" << endl;
+    cout << "Enter your choice: ";
+    int choice = readIntInput();
+
+    switch (choice) {
+        case 1:
+            cout << "Enter new Course Name: ";
+            cin.ignore();
+            getline(cin, courseArray[idx].name);
+            break;
+        case 2:
+            cout << "Enter new Credit Hours: ";
+            courseArray[idx].credit = readIntInput();
+            break;
+        case 3:
+            cout << "Enter new Department: ";
+            cin >> courseArray[idx].department;
+            break;
+        case 0:
+            cout << "Cancelled." << endl;
+            pauseScreen();
+            return;
+        default:
+            cout << "Invalid choice." << endl;
+            pauseScreen();
+            return;
+    }
+
+    rewriteCoursesFile();
+    cout << "Course updated successfully." << endl;
     pauseScreen();
 }
 
 void deleteCourseScreen() {
     clearScreen();
     cout << "============ DELETE COURSE ============" << endl;
-    cout << "[Placeholder] Will remove a Course record and rewrite courses.txt" << endl;
+
+    if (courseCount == 0) {
+        cout << "No course records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Course Code to delete (or 0 to cancel): ";
+    string code;
+    cin >> code;
+
+    if (code == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    int idx = findCourseIndexByCode(code);
+    if (idx == -1) {
+        cout << "Course code not found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "\nAre you sure you want to delete this course?" << endl;
+    cout << courseArray[idx].code << " - " << courseArray[idx].name << endl;
+    cout << "1. Yes, delete" << endl;
+    cout << "0. No, cancel" << endl;
+    cout << "Enter your choice: ";
+    int confirm = readIntInput();
+
+    if (confirm != 1) {
+        cout << "Deletion cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    for (int i = idx; i < courseCount - 1; i++) {
+        courseArray[i] = courseArray[i + 1];
+    }
+    courseCount--;
+
+    rewriteCoursesFile();
+    cout << "Course deleted successfully." << endl;
     pauseScreen();
 }
 
@@ -1721,7 +2401,7 @@ void manageGradesScreen() {
         cout << "1. View All Grades for a Student" << endl;
         cout << "2. Assign/Update Grade for Student" << endl;
         cout << "3. Approve Pending Enrollment" << endl;
-        cout << "4. Back" << endl;
+        cout << "0. Back" << endl;
         cout << "=====================================" << endl;
         cout << "Enter your choice: ";
         choice = readIntInput();
@@ -1729,7 +2409,7 @@ void manageGradesScreen() {
             case 1: viewGradesForStudentScreen(); break;
             case 2: assignGradeScreen();          break;
             case 3: approveEnrollmentScreen();    break;
-            case 4: inSubMenu = false;            break;
+            case 0: inSubMenu = false;            break;
             default:
                 cout << "Invalid choice." << endl;
                 pauseScreen();
@@ -1740,50 +2420,384 @@ void manageGradesScreen() {
 void viewGradesForStudentScreen() {
     clearScreen();
     cout << "===== VIEW GRADES FOR A STUDENT =====" << endl;
-    cout << "[Placeholder] Will prompt Student ID and list their grades.txt entries" << endl;
+
+    if (studentCount == 0) {
+        cout << "No student records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Student ID (or 0 to cancel): ";
+    string id;
+    cin >> id;
+
+    if (id == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    int idx = findStudentIndexByID(id);
+    if (idx == -1) {
+        cout << "Student ID not found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "\nGrades for " << studentArray[idx]->getName() << " (" << id << "):" << endl;
+    studentArray[idx]->getGradeList()->displayAll();
+
     pauseScreen();
 }
 
 void assignGradeScreen() {
     clearScreen();
     cout << "===== ASSIGN/UPDATE GRADE =====" << endl;
-    cout << "[Placeholder] Will write/update a row in grades.txt" << endl;
+
+    if (studentCount == 0) {
+        cout << "No student records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Student ID (or 0 to cancel): ";
+    string id;
+    cin >> id;
+
+    if (id == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    int idx = findStudentIndexByID(id);
+    if (idx == -1) {
+        cout << "Student ID not found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    studentArray[idx]->getGradeList()->displayAll();
+
+    cout << "\nEnter Course Code to assign/update a grade for (or 0 to cancel): ";
+    string code;
+    cin >> code;
+
+    if (code == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Grade (e.g. A, A-, B+, F, or 0 to cancel): ";
+    string grade;
+    cin >> grade;
+
+    if (grade == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    bool updated = studentArray[idx]->getGradeList()->updateGradeByCourse(code, grade);
+
+    if (!updated) {
+        // Course isn't on this student's record yet - look it up in the
+        // catalog and add it directly with the given grade.
+        int courseIdx = findCourseIndexByCode(code);
+        if (courseIdx == -1) {
+            cout << "Course code not found in catalog and student has no record for it." << endl;
+            pauseScreen();
+            return;
+        }
+        GradeEntry newEntry(id, courseArray[courseIdx].code, courseArray[courseIdx].name,
+                             courseArray[courseIdx].credit, grade, "Sem2-2026");
+        studentArray[idx]->getGradeList()->insert(newEntry);
+    }
+
+    rewriteGradesFile();
+    cout << "Grade assigned/updated successfully." << endl;
     pauseScreen();
 }
 
 void approveEnrollmentScreen() {
     clearScreen();
     cout << "===== APPROVE PENDING ENROLLMENT =====" << endl;
-    cout << "[Placeholder] Will change a Pending GradeEntry's status to Approved" << endl;
+
+    if (studentCount == 0) {
+        cout << "No student records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Student ID (or 0 to cancel): ";
+    string id;
+    cin >> id;
+
+    if (id == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    int idx = findStudentIndexByID(id);
+    if (idx == -1) {
+        cout << "Student ID not found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    GradeEntry tempArr[MAX_TEMP_GRADES];
+    int n = 0;
+    studentArray[idx]->getGradeList()->toArray(tempArr, n);
+
+    bool hasPending = false;
+    cout << "\nPending Enrollments for " << studentArray[idx]->getName() << ":" << endl;
+    for (int i = 0; i < n; i++) {
+        if (tempArr[i].getGrade() == "Pending") {
+            cout << tempArr[i].getCourseCode() << " - " << tempArr[i].getCourseName() << endl;
+            hasPending = true;
+        }
+    }
+
+    if (!hasPending) {
+        cout << "No pending enrollments for this student." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "\nEnter Course Code to approve (or 0 to cancel): ";
+    string code;
+    cin >> code;
+
+    if (code == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter the Grade to assign (e.g. A, A-, B+, or 0 to cancel): ";
+    string grade;
+    cin >> grade;
+
+    if (grade == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    bool updated = studentArray[idx]->getGradeList()->updateGradeByCourse(code, grade);
+    if (!updated) {
+        cout << "Course code not found in this student's pending list." << endl;
+        pauseScreen();
+        return;
+    }
+
+    rewriteGradesFile();
+    cout << "Enrollment approved and grade assigned." << endl;
     pauseScreen();
 }
 
 void sortStudentsScreen() {
     clearScreen();
     cout << "========== SORT STUDENTS ==========" << endl;
-    cout << "1. Sort by GPA" << endl;
+
+    if (studentCount == 0) {
+        cout << "No student records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "1. Sort by GPA (Highest to Lowest)" << endl;
     cout << "2. Sort by Student ID" << endl;
-    cout << "[Placeholder] Will run quickSort() on the Student array" << endl;
+    cout << "0. Back" << endl;
+    cout << "Enter your choice: ";
+    int choice = readIntInput();
+
+    if (choice == 0) {
+        return;
+    }
+
+    Student* sortedArr[MAX_STUDENTS];
+    for (int i = 0; i < studentCount; i++) sortedArr[i] = studentArray[i];
+
+    if (choice == 1) {
+        quickSort(sortedArr, 0, studentCount - 1, "GPA");
+    } else if (choice == 2) {
+        quickSort(sortedArr, 0, studentCount - 1, "ID");
+    } else {
+        cout << "Invalid choice." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "\n----- Sorted Results -----" << endl;
+    cout << left
+         << setw(8)  << "ID"
+         << setw(20) << "Name"
+         << setw(10) << "Program"
+         << setw(10) << "GPA"
+         << endl;
+    cout << "------------------------------------------------" << endl;
+
+    cout << fixed << setprecision(2);
+    for (int i = 0; i < studentCount; i++) {
+        cout << left
+             << setw(8)  << sortedArr[i]->getID()
+             << setw(20) << sortedArr[i]->getName()
+             << setw(10) << sortedArr[i]->getProgram()
+             << setw(10) << calculateStudentGPA(sortedArr[i])
+             << endl;
+    }
+
     pauseScreen();
 }
 
 void searchStudentScreen() {
     clearScreen();
     cout << "========= SEARCH STUDENT RECORD =========" << endl;
-    cout << "[Placeholder] Will prompt Student ID and run binarySearch()" << endl;
+
+    if (studentCount == 0) {
+        cout << "No student records found." << endl;
+        pauseScreen();
+        return;
+    }
+
+    cout << "Enter Student ID to search (or 0 to cancel): ";
+    string id;
+    cin >> id;
+
+    if (id == "0") {
+        cout << "Cancelled." << endl;
+        pauseScreen();
+        return;
+    }
+
+    Student* sortedArr[MAX_STUDENTS];
+    for (int i = 0; i < studentCount; i++) sortedArr[i] = studentArray[i];
+    quickSort(sortedArr, 0, studentCount - 1, "ID");
+
+    int result = binarySearch(sortedArr, studentCount, id);
+
+    if (result != -1) {
+        cout << "\nStudent Found:" << endl;
+        sortedArr[result]->displayProfile();
+        cout << "Cumulative GPA: " << fixed << setprecision(2)
+             << calculateStudentGPA(sortedArr[result]) << endl;
+    } else {
+        cout << "\nStudent ID not found." << endl;
+    }
+
     pauseScreen();
 }
 
 void generateAdminReportScreen() {
     clearScreen();
     cout << "===== GENERATE DEPARTMENT REPORT =====" << endl;
-    cout << "[Placeholder] Will compute stats and overwrite admin_report.txt" << endl;
+
+    if (studentCount == 0) {
+        cout << "No student records found. Cannot generate report." << endl;
+        pauseScreen();
+        return;
+    }
+
+    ofstream outFile("admin_report.txt");
+    if (!outFile) {
+        cout << "Error: could not open admin_report.txt for writing." << endl;
+        pauseScreen();
+        return;
+    }
+
+    outFile << "============================================================" << endl;
+    outFile << "           DEPARTMENT ACADEMIC SUMMARY REPORT" << endl;
+    outFile << "============================================================" << endl;
+
+    double totalGPA = 0.0;
+    for (int i = 0; i < studentCount; i++) {
+        totalGPA += calculateStudentGPA(studentArray[i]);
+    }
+    double overallAverage = totalGPA / studentCount;
+
+    outFile << fixed << setprecision(2);
+    outFile << "Total Students        : " << studentCount << endl;
+    outFile << "Total Courses Offered : " << courseCount << endl;
+    outFile << "Overall Average GPA   : " << overallAverage << endl;
+    outFile << "============================================================" << endl;
+
+    // Average GPA per program (manual grouping - no STL map/set)
+    string programs[MAX_STUDENTS];
+    int programCount = 0;
+    for (int i = 0; i < studentCount; i++) {
+        string prog = studentArray[i]->getProgram();
+        bool found = false;
+        for (int j = 0; j < programCount; j++) {
+            if (programs[j] == prog) { found = true; break; }
+        }
+        if (!found) {
+            programs[programCount] = prog;
+            programCount++;
+        }
+    }
+
+    outFile << "\nAverage GPA by Program:" << endl;
+    outFile << "------------------------------------------------------------" << endl;
+    for (int p = 0; p < programCount; p++) {
+        double sum = 0.0;
+        int count = 0;
+        for (int i = 0; i < studentCount; i++) {
+            if (studentArray[i]->getProgram() == programs[p]) {
+                sum += calculateStudentGPA(studentArray[i]);
+                count++;
+            }
+        }
+        double avg = (count > 0) ? (sum / count) : 0.0;
+        outFile << left << setw(10) << programs[p]
+                << "Students: " << setw(5) << count
+                << "Avg GPA: " << avg << endl;
+    }
+
+    // Top students by GPA (capped at 5, or fewer if the cohort is smaller)
+    Student* sortedArr[MAX_STUDENTS];
+    for (int i = 0; i < studentCount; i++) sortedArr[i] = studentArray[i];
+    quickSort(sortedArr, 0, studentCount - 1, "GPA");
+
+    outFile << "\nTop Students by GPA:" << endl;
+    outFile << "------------------------------------------------------------" << endl;
+    outFile << left << setw(8) << "ID" << setw(20) << "Name" << setw(10) << "Program" << setw(8) << "GPA" << endl;
+
+    int topN = (studentCount < 5) ? studentCount : 5;
+    for (int i = 0; i < topN; i++) {
+        outFile << left
+                << setw(8)  << sortedArr[i]->getID()
+                << setw(20) << sortedArr[i]->getName()
+                << setw(10) << sortedArr[i]->getProgram()
+                << setw(8)  << calculateStudentGPA(sortedArr[i])
+                << endl;
+    }
+
+    outFile << "============================================================" << endl;
+    outFile.close();
+
+    cout << "Report saved to admin_report.txt" << endl;
     pauseScreen();
 }
 
 void viewAdminReportScreen() {
     clearScreen();
     cout << "========= VIEW SAVED REPORT =========" << endl;
-    cout << "[Placeholder] Will read back admin_report.txt" << endl;
+
+    ifstream inFile("admin_report.txt");
+    if (!inFile) {
+        cout << "No saved report found. Please generate a report first." << endl;
+        pauseScreen();
+        return;
+    }
+
+    string line;
+    while (getline(inFile, line)) {
+        cout << line << endl;
+    }
+    inFile.close();
+
     pauseScreen();
 }
