@@ -21,6 +21,7 @@
 #include <string>
 #include <cstdlib>    // for system()
 #include <stdexcept>  // for runtime_error (try/catch demonstration)
+#include <iomanip>    // for setw() and setprecision() in report formatting
 using namespace std;
 
 // =====================================================================
@@ -364,9 +365,14 @@ GradeEntry::GradeEntry(string sid, string code, string name, int credit, string 
 }
 
 void GradeEntry::displayRecord() {
-    cout << getCourseCode() << " | " << getCourseName() << " | "
-         << getCredit() << " credit(s) | Grade: " << grade
-         << " | " << term.semester << endl;
+    cout << left
+     << setw(10) << getCourseCode()
+     << setw(30) << getCourseName()
+     << setw(5)  << getCredit()
+     << setw(12) << "credit(s)"
+     << setw(8)  << grade
+     << term.semester
+     << endl;
 }
 
 string GradeEntry::getStudentID() const { return studentID; }
@@ -375,9 +381,14 @@ void GradeEntry::setGrade(string g)     { grade = g; }
 DateInfo GradeEntry::getTerm() const    { return term; }
 
 void printGradeDetails(GradeEntry &g) {
-    cout << g.studentID << " | " << g.courseCode << " | " << g.courseName
-         << " | " << g.credit << " credit(s) | Grade: " << g.grade
-         << " | " << g.term.semester << endl;
+    cout << left
+     << setw(12) << g.studentID
+     << setw(12) << g.courseCode
+     << setw(35) << g.courseName
+     << setw(8)  << g.credit
+     << setw(10) << g.grade
+     << setw(15) << g.term.semester
+     << endl;
 }
 
 // =====================================================================
@@ -850,23 +861,37 @@ void generateStudentReport(Student* s) {
         return;
     }
 
-    outFile << "===================================" << endl;
-    outFile << " STUDENT ACADEMIC SUMMARY REPORT" << endl;
-    outFile << "===================================" << endl;
+    outFile << "============================================================" << endl;
+    outFile << "              STUDENT ACADEMIC SUMMARY REPORT" << endl;
+    outFile << "============================================================" << endl;
     outFile << "Student ID : " << s->getID() << endl;
     outFile << "Name       : " << s->getName() << endl;
     outFile << "Program    : " << s->getProgram() << endl;
-    outFile << "-----------------------------------" << endl;
-    outFile << "Code | Course Name | Credit | Grade | Semester" << endl;
-    outFile << "-----------------------------------" << endl;
+    outFile << "============================================================" << endl;
 
-    for (int i = 0; i < n; i++) {
-        outFile << tempArr[i].getCourseCode() << " | " << tempArr[i].getCourseName() << " | "
-                << tempArr[i].getCredit() << " | " << tempArr[i].getGrade() << " | "
-                << tempArr[i].getTerm().semester << endl;
+    outFile << left
+            << setw(10) << "Code"
+            << setw(25) << "Course Name"
+            << setw(8)  << "Credit"
+            << setw(10) << "Grade"
+            << setw(15) << "Semester" << endl;
+
+    outFile << "============================================================" << endl;
+
+    for (int i = 0; i < n; i++) 
+    {
+        outFile << left
+                << setw(10) << tempArr[i].getCourseCode()
+                << setw(25) << tempArr[i].getCourseName()
+                << setw(8)  << tempArr[i].getCredit()
+                << setw(10) << tempArr[i].getGrade()
+                << setw(15) << tempArr[i].getTerm().semester
+                << endl;
 
         double gpaPoint = gradeToGPA(tempArr[i].getGrade());
-        if (gpaPoint >= 0.0) {
+
+        if (gpaPoint >= 0.0) 
+        {
             totalPoints += gpaPoint * tempArr[i].getCredit();
             totalCredits += tempArr[i].getCredit();
         }
@@ -874,10 +899,10 @@ void generateStudentReport(Student* s) {
 
     double gpa = (totalCredits > 0) ? (totalPoints / totalCredits) : 0.0;
 
-    outFile << "-----------------------------------" << endl;
+    outFile << "============================================================" << endl;
     outFile << "Total Credits Completed : " << totalCredits << endl;
-    outFile << "Cumulative GPA          : " << gpa << endl;
-    outFile << "===================================" << endl;
+    outFile << "Cumulative GPA          : " << fixed << setprecision(2) << gpa << endl;
+    outFile << "============================================================" << endl;
     outFile.close();
 }
 
@@ -1213,7 +1238,15 @@ void updateProfileScreen(string studentID) {
 
 void viewGradesScreen(string studentID) {
     clearScreen();
-    cout << "======== MY ACADEMIC RECORDS ========" << endl;
+    cout << "================================ MY ACADEMIC RECORDS ================================" << endl;
+    cout << left
+         << setw(12) << "Student ID"   
+         << setw(12) << "Code"
+         << setw(35) << "Course Name"
+         << setw(8)  << "Credit"
+         << setw(10) << "Grade"
+         << setw(15) << "Semester" << endl;
+     cout << "-------------------------------------------------------------------------------------" << endl;
 
     int idx = findStudentIndexByID(studentID);
     if (idx == -1) {
@@ -1255,6 +1288,13 @@ void searchGradeScreen(string studentID) {
 
     if (result != -1) {
         cout << "\nRecord Found:" << endl;
+            cout<< left
+            << setw(10) << "Code"
+            << setw(30) << "Course Name"
+            << setw(17)  << "Credit"
+            << setw(8) << "Grade"
+            << setw(15) << "Semester" << endl;
+            cout<< "--------------------------------------------------------------------------" << endl;
         tempArr[result].displayRecord();
     } else {
         cout << "\nCourse not found in your records." << endl;
@@ -1299,7 +1339,14 @@ void sortGradesScreen(string studentID) {
         return;
     }
 
-    cout << "\n----- Sorted Results -----" << endl;
+    cout << "\n----------------------------- Sorted Results -----------------------------" << endl;
+    cout<< left
+        << setw(10) << "Code"
+        << setw(30) << "Course Name"
+        << setw(17)  << "Credit"
+        << setw(8) << "Grade"
+        << setw(4) << "Semester" << endl;
+        cout << "--------------------------------------------------------------------------" << endl;
     for (int i = 0; i < n; i++) {
         tempArr[i].displayRecord();
     }
@@ -1325,9 +1372,14 @@ void addEnrollmentScreen(string studentID) {
     }
 
     cout << "Available Courses:" << endl;
+    cout<< left
+        << setw(10) << "Code"
+        << setw(30) << "Course Name"
+       << "Credit" << endl;
+    cout<< "--------------------------------------------------------------------------" << endl;
     for (int i = 0; i < courseCount; i++) {
-        cout << courseArray[i].code << " - " << courseArray[i].name
-             << " (" << courseArray[i].credit << " credit(s))" << endl;
+        cout <<left<< setw(10) << courseArray[i].code << setw(30) << courseArray[i].name
+         << courseArray[i].credit << " credit(s)" << endl;
     }
 
     cout << "\nEnter Course Code to enroll: ";
@@ -1383,9 +1435,13 @@ void editPendingEnrollmentScreen(string studentID) {
 
     bool hasPending = false;
     cout << "Your Pending Enrollments:" << endl;
+    cout<< left
+        << setw(10) << "Code"
+        << setw(30) << "Course Name" << endl;
+    cout << "--------------------------" << endl;
     for (int i = 0; i < n; i++) {
         if (tempArr[i].getGrade() == "Pending") {
-            cout << tempArr[i].getCourseCode() << " - " << tempArr[i].getCourseName() << endl;
+            cout <<left<< setw(10) << tempArr[i].getCourseCode() << setw(30) << tempArr[i].getCourseName() << endl;
             hasPending = true;
         }
     }
@@ -1400,6 +1456,7 @@ void editPendingEnrollmentScreen(string studentID) {
     string oldCode;
     cin >> oldCode;
 
+    
     cout << "Enter the new Course Code you want instead: ";
     string newCode;
     cin >> newCode;

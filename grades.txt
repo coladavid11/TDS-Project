@@ -2,6 +2,8 @@ S001|CS101|Programming Fundamentals|3|A|Sem1-2024
 S001|MATH101|Calculus I|3|B+|Sem1-2024
 S001|DS201|Data Structures|3|A-|Sem2-2024
 S001|DB101|Database Systems|3|B|Sem2-2024
+S001|WEB101|Web Development|3|Pending|Sem2-2026
+S001|STAT201|Probability & Statistics|3|Pending|Sem2-2026
 S002|CS101|Programming Fundamentals|3|B|Sem1-2023
 S002|NET201|Computer Networks|3|A|Sem2-2023
 S002|WEB101|Web Development|3|A-|Sem1-2023
