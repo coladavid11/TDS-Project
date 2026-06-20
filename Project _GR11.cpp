@@ -22,6 +22,9 @@ const int MAX_STUDENTS = 100;
 const int MAX_COURSES  = 50;
 const int MAX_STAFF    = 20;
 const int MAX_TEMP_GRADES = 100; // scratch array size for sort/search extraction
+const int MIN_SEMESTER_NUMBER = 1;   // only Sem1, Sem2, Sem3 exist in an academic year
+const int MAX_SEMESTER_NUMBER = 3;
+const int MIN_SEMESTER_YEAR   = 2026; // no backdated semesters allowed
 
 // =====================================================================
 // UTILITY FUNCTIONS (general purpose, no class dependency)
@@ -209,20 +212,64 @@ bool isValidSemesterFormat(string semester) {
     return yearDigits == 4; // year part must be exactly 4 digits, e.g. 2026
 }
 
+// SEMESTER VALUE RULE (checked AFTER isValidSemesterFormat confirms the
+// shape is "SemN-YYYY"): rejects values that are well-formed but
+// nonsensical, e.g. "Sem100-1996":
+//   - the semester number must be between 1 and 3 inclusive (an academic
+//     year only ever has Sem1/Sem2/Sem3)
+//   - the year must be MIN_SEMESTER_YEAR (2026) or later - no backdated
+//     semesters
+// Re-uses the same manual char-by-char extraction style as
+// semesterToKey() - just string concatenation + stringToInt(), no STL.
+bool isValidSemesterValue(string semester) {
+    int len = (int)semester.length();
+
+    int i = 3; // skip the literal "Sem"
+    string semPart = "";
+    while (i < len && semester[i] != '-') {
+        semPart += semester[i];
+        i++;
+    }
+    i++; // skip '-'
+    string yearPart = "";
+    while (i < len) {
+        yearPart += semester[i];
+        i++;
+    }
+
+    int semNum = stringToInt(semPart);
+    int year   = stringToInt(yearPart);
+
+    if (semNum < MIN_SEMESTER_NUMBER || semNum > MAX_SEMESTER_NUMBER) return false;
+    if (year < MIN_SEMESTER_YEAR) return false;
+
+    return true;
+}
+
 // Repeatedly prompts for a semester string until it matches the SemN-YYYY
-// shape or the user cancels. Returns "0" as a sentinel meaning "cancelled"
-// (a real semester string can never equal "0", so the sentinel is safe)
-// and otherwise returns the validated semester text.
+// shape AND has a sane semester number (1-3) and year (>= 2026), or the
+// user cancels. Returns "0" as a sentinel meaning "cancelled" (a real
+// semester string can never equal "0", so the sentinel is safe) and
+// otherwise returns the validated semester text.
 string promptSemesterInput(string promptLabel) {
     string semester;
     int attempts = 0;
     while (true) {
-        cout << promptLabel << " (format SemN-YYYY, e.g. Sem1-2026, or 0 to cancel): ";
+        cout << promptLabel << " (format SemN-YYYY, N=1-3, year>=" << MIN_SEMESTER_YEAR
+             << ", e.g. Sem1-2026, or 0 to cancel): ";
         cin >> semester;
         if (semester == "0") return "0";
-        if (isValidSemesterFormat(semester)) return semester;
 
-        cout << "Invalid semester format. Please use SemN-YYYY, e.g. Sem1-2026." << endl;
+        if (!isValidSemesterFormat(semester)) {
+            cout << "Invalid semester format. Please use SemN-YYYY, e.g. Sem1-2026." << endl;
+        } else if (!isValidSemesterValue(semester)) {
+            cout << "Invalid semester value. Semester number must be between "
+                 << MIN_SEMESTER_NUMBER << " and " << MAX_SEMESTER_NUMBER
+                 << ", and year must be " << MIN_SEMESTER_YEAR << " or later." << endl;
+        } else {
+            return semester;
+        }
+
         attempts++;
         if (attempts >= 5) {
             cout << "Too many invalid attempts. Operation cancelled." << endl;
@@ -1405,49 +1452,6 @@ void showMainMenu() {
     }
 }
 
-// Helper 1: Manually validate email format (No STL)
-bool isValidEmailFormat(string email) {
-    int atIndex = -1;
-    int dotIndex = -1;
-    int atCount = 0;
-
-    for (int i = 0; i < email.length(); i++) {
-        if (email[i] == '@') {
-            atIndex = i;
-            atCount++;
-        } else if (email[i] == '.' && atIndex != -1) {
-            // Record the position of the last '.' that appears after the '@'
-            dotIndex = i; 
-        }
-    }
-
-    // Format rules:
-    // 1. Must contain exactly one '@'
-    if (atCount != 1) return false;
-    // 2. '@' cannot be the first character
-    if (atIndex == 0) return false;
-    // 3. Must have a '.' somewhere after the '@'
-    if (dotIndex == -1) return false;
-    // 4. '.' cannot immediately follow the '@' (e.g., user@.com is invalid)
-    if (dotIndex == atIndex + 1) return false;
-    // 5. '.' cannot be the last character
-    if (dotIndex == email.length() - 1) return false;
-
-    return true;
-}
-
-// Helper 2: Check if the email is already registered in the system
-bool isEmailDuplicate(string email) {
-    // Iterate through the currently loaded studentArray in memory
-    for (int i = 0; i < studentCount; i++) {
-        // Note: Ensure getEmail() matches the actual getter method in your Person/Student class
-        if (studentArray[i]->getEmail() == email) {
-            return true; // Duplicate found
-        }
-    }
-    return false;
-}
-
 // =====================================================================
 // SCREEN 1 - STUDENT REGISTRATION (real logic, with IC/phone validation)
 // =====================================================================
@@ -1465,7 +1469,6 @@ void studentRegistrationScreen() {
         if (name == "0") {
             return;
         }   
-
         int icAttempts = 0;
         do {
             cout << "Enter IC Number (must be exactly 12 digits): ";
@@ -1481,33 +1484,25 @@ void studentRegistrationScreen() {
             }
         } while (!isValidIC(ic) || !isICUnique(ic, ""));
 
-        // ==========================================
-        // [START of new Email validation logic]
-        // ==========================================
+        // Email must be well-formed (isValidEmail) AND not already used by
+        // another student (isEmailUnique) before registration proceeds.
         int emailAttempts = 0;
-        bool validEmailFound = false;
         do {
-            cout << "Enter Email: ";
+            cout << "Enter Email (or 0 to cancel): ";
             cin >> email;
-            emailAttempts++;
-
-            if (!isValidEmailFormat(email)) {
-                cout << "Invalid email format. Must contain '@' and a domain (e.g., user@email.com)." << endl;
-                if (emailAttempts >= 5) {
-                    throw runtime_error("Too many invalid email format attempts. Registration cancelled.");
-                }
-            } else if (isEmailDuplicate(email)) {
-                cout << "Email is already registered! Please use a different email." << endl;
-                if (emailAttempts >= 5) {
-                    throw runtime_error("Too many duplicate email attempts. Registration cancelled.");
-                }
-            } else {
-                validEmailFound = true; // Format is valid and no duplicates found
+            if (email == "0") {
+                return;
             }
-        } while (!validEmailFound);
-        // ==========================================
-        // [END of new Email validation logic]
-        // ==========================================
+            emailAttempts++;
+            if (!isValidEmail(email)) {
+                cout << "Invalid email format." << endl;
+            } else if (!isEmailUnique(email, "")) {
+                cout << "This email is already registered to another student." << endl;
+            }
+            if ((!isValidEmail(email) || !isEmailUnique(email, "")) && emailAttempts >= 5) {
+                throw runtime_error("Too many invalid email attempts. Registration cancelled.");
+            }
+        } while (!isValidEmail(email) || !isEmailUnique(email, ""));
 
         cout << "Enter Password: ";
         cin >> password;
@@ -1546,7 +1541,8 @@ void studentRegistrationScreen() {
     }
 
     pauseScreen();
-}            
+}
+
 // =====================================================================
 // SCREEN 2 - STUDENT LOGIN (real logic)
 // =====================================================================
