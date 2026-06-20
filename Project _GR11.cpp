@@ -255,8 +255,9 @@ string promptSemesterInput(string promptLabel) {
     string semester;
     int attempts = 0;
     while (true) {
-        cout << promptLabel << " (format SemN-YYYY, N=1-3, year>=" << MIN_SEMESTER_YEAR
-             << ", e.g. Sem1-2026, or 0 to cancel): ";
+        cout << "(format SemN-YYYY, N=1-3, year>=" << MIN_SEMESTER_YEAR
+             << ", e.g. Sem1-2026'"<<endl;
+        cout << promptLabel << " Enter Semester (0 to cancel): ";
         cin >> semester;
         if (semester == "0") return "0";
 
