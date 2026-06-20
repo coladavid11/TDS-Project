@@ -22,9 +22,6 @@ const int MAX_STUDENTS = 100;
 const int MAX_COURSES  = 50;
 const int MAX_STAFF    = 20;
 const int MAX_TEMP_GRADES = 100; // scratch array size for sort/search extraction
-const int MIN_SEMESTER_NUMBER = 1;   // only Sem1, Sem2, Sem3 exist in an academic year
-const int MAX_SEMESTER_NUMBER = 3;
-const int MIN_SEMESTER_YEAR   = 2026; // no backdated semesters allowed
 
 // =====================================================================
 // UTILITY FUNCTIONS (general purpose, no class dependency)
@@ -142,161 +139,16 @@ bool isValidPhone(string phone) {
     return isAllDigits(phone) && (int)phone.length() >= 9 && (int)phone.length() < 12;
 }
 
-// EMAIL RULE (manual character scan only - NO string::find / STL algorithm):
-//   - exactly one '@' symbol
-//   - that '@' is not the first or last character
-//   - somewhere AFTER the '@' there must be a '.' character
-//   - that '.' is not the last character either
-//   - the '@' and the '.' cannot be immediately adjacent to each other
-bool isValidEmail(string email) {
-    int len = (int)email.length();
-    if (len < 5) return false; // shortest sane shape: a@b.c -> 5 characters
+// EMAIL RULE: must contain exactly one '@' symbol, and it cannot
+// be the first or last character of the email address.
+// This is a simple validation for the Student Management System.
+bool isValidEmail(string email)
+{
+    size_t atPos = email.find('@');
 
-    // PASS 1: walk every character once to count '@' occurrences and
-    // remember its position. A plain indexed for-loop over the raw
-    // string - no STL container or algorithm involved.
-    int atCount = 0;
-    int atPos = -1;
-    for (int i = 0; i < len; i++) {
-        if (email[i] == '@') {
-            atCount++;
-            atPos = i;
-        }
-    }
-
-    if (atCount != 1) return false;                    // must be exactly one '@'
-    if (atPos == 0 || atPos == len - 1) return false;   // can't be first/last char
-
-    // PASS 2: walk forward from just after '@' looking for the first '.'.
-    int dotPos = -1;
-    for (int i = atPos + 1; i < len; i++) {
-        if (email[i] == '.') {
-            dotPos = i;
-            break;
-        }
-    }
-
-    if (dotPos == -1) return false;        // no '.' found after the '@'
-    if (dotPos == len - 1) return false;   // '.' can't be the last character
-    if (dotPos == atPos + 1) return false; // '@' and '.' can't sit next to each other
-
-    return true;
-}
-
-// SEMESTER FORMAT RULE: must look like "SemN-YYYY" (e.g. "Sem1-2026").
-// Validated with a manual character walk (mirrors the style already used
-// by semesterToKey() above) - no STL parsing/regex of any kind.
-bool isValidSemesterFormat(string semester) {
-    int len = (int)semester.length();
-    if (len < 6) return false; // shortest valid shape: "Sem1-1" has 6 chars (sanity floor)
-
-    if (semester[0] != 'S' || semester[1] != 'e' || semester[2] != 'm') return false;
-
-    int i = 3;
-    int semDigits = 0;
-    while (i < len && semester[i] != '-') {
-        if (semester[i] < '0' || semester[i] > '9') return false;
-        semDigits++;
-        i++;
-    }
-    if (semDigits == 0) return false;          // no semester number before the '-'
-    if (i >= len || semester[i] != '-') return false; // missing the '-' separator
-    i++; // skip past '-'
-
-    int yearDigits = 0;
-    while (i < len) {
-        if (semester[i] < '0' || semester[i] > '9') return false;
-        yearDigits++;
-        i++;
-    }
-    return yearDigits == 4; // year part must be exactly 4 digits, e.g. 2026
-}
-
-// SEMESTER VALUE RULE (checked AFTER isValidSemesterFormat confirms the
-// shape is "SemN-YYYY"): rejects values that are well-formed but
-// nonsensical, e.g. "Sem100-1996":
-//   - the semester number must be between 1 and 3 inclusive (an academic
-//     year only ever has Sem1/Sem2/Sem3)
-//   - the year must be MIN_SEMESTER_YEAR (2026) or later - no backdated
-//     semesters
-// Re-uses the same manual char-by-char extraction style as
-// semesterToKey() - just string concatenation + stringToInt(), no STL.
-bool isValidSemesterValue(string semester) {
-    int len = (int)semester.length();
-
-    int i = 3; // skip the literal "Sem"
-    string semPart = "";
-    while (i < len && semester[i] != '-') {
-        semPart += semester[i];
-        i++;
-    }
-    i++; // skip '-'
-    string yearPart = "";
-    while (i < len) {
-        yearPart += semester[i];
-        i++;
-    }
-
-    int semNum = stringToInt(semPart);
-    int year   = stringToInt(yearPart);
-
-    if (semNum < MIN_SEMESTER_NUMBER || semNum > MAX_SEMESTER_NUMBER) return false;
-    if (year < MIN_SEMESTER_YEAR) return false;
-
-    return true;
-}
-
-// Repeatedly prompts for a semester string until it matches the SemN-YYYY
-// shape AND has a sane semester number (1-3) and year (>= 2026), or the
-// user cancels. Returns "0" as a sentinel meaning "cancelled" (a real
-// semester string can never equal "0", so the sentinel is safe) and
-// otherwise returns the validated semester text.
-string promptSemesterInput(string promptLabel) {
-    string semester;
-    int attempts = 0;
-    while (true) {
-        cout << "(format SemN-YYYY, N=1-3, year>=" << MIN_SEMESTER_YEAR
-             << ", e.g. Sem1-2026'"<<endl;
-        cout << promptLabel << " Enter Semester (0 to cancel): ";
-        cin >> semester;
-        if (semester == "0") return "0";
-
-        if (!isValidSemesterFormat(semester)) {
-            cout << "Invalid semester format. Please use SemN-YYYY, e.g. Sem1-2026." << endl;
-        } else if (!isValidSemesterValue(semester)) {
-            cout << "Invalid semester value. Semester number must be between "
-                 << MIN_SEMESTER_NUMBER << " and " << MAX_SEMESTER_NUMBER
-                 << ", and year must be " << MIN_SEMESTER_YEAR << " or later." << endl;
-        } else {
-            return semester;
-        }
-
-        attempts++;
-        if (attempts >= 5) {
-            cout << "Too many invalid attempts. Operation cancelled." << endl;
-            return "0";
-        }
-    }
-}
-
-// GRADE WHITELIST RULE: only these exact letter-grade codes (plus the
-// "Pending" placeholder used for unapproved enrollments) are accepted.
-// Checked via plain string equality comparisons one at a time - no
-// STL std::set/std::map is used to hold or search the whitelist.
-bool isValidGradeFormat(string grade) {
-    if (grade == "A+" || grade == "A"  || grade == "A-") return true;
-    else if (grade == "B+" || grade == "B"  || grade == "B-")
-    return true;
-    else if (grade == "C+" || grade == "C"  || grade == "C-") 
-    return true;
-    else if (grade == "D+" || grade == "D"  || grade == "D-") 
-    return true;
-    else if (grade == "F")                                   
-    return true;
-    else if (grade == "Pending")                              
-    return true;
-    else    
-    return false;
+    return atPos != string::npos &&
+           atPos > 0 &&
+           atPos < email.length() - 1;
 }
 
 // Converts "SemX-YYYY" into a single comparable integer key, e.g.
@@ -499,7 +351,6 @@ public:
     string getGrade() const;
     void setGrade(string g);
     DateInfo getTerm() const;
-    void setSemester(string semester);
 
     friend void printGradeDetails(GradeEntry &g); // friend #3
 };
@@ -535,14 +386,6 @@ string GradeEntry::getGrade() const     { return grade; }
 void GradeEntry::setGrade(string g)     { grade = g; }
 DateInfo GradeEntry::getTerm() const    { return term; }
 
-// Updates the semester text AND recomputes the numeric sortKey together,
-// so a record edited via assignGradeScreen()/approveEnrollmentScreen()
-// still sorts/GPA-groups correctly afterwards.
-void GradeEntry::setSemester(string semester) {
-    term.semester = semester;
-    term.sortKey = semesterToKey(semester);
-}
-
 void printGradeDetails(GradeEntry &g) {
     cout << left
      << setw(12) << g.studentID
@@ -573,7 +416,6 @@ public:
     void insert(GradeEntry e);
     bool removeByCourse(string code);
     bool updateGradeByCourse(string code, string newGrade);
-    bool updateGradeAndSemesterByCourse(string code, string newGrade, string newSemester);
     void displayAll();
     bool isEmpty() const;
     int getCount() const;
@@ -644,23 +486,6 @@ bool GradeLinkedList::updateGradeByCourse(string code, string newGrade) {
     while (current != nullptr) {
         if (current->data.getCourseCode() == code) {
             current->data.setGrade(newGrade);
-            return true;
-        }
-        current = current->next;
-    }
-    return false;
-}
-
-// Updates both the Grade AND the Semester of an existing record in one
-// pass over the linked list (single pointer walk, no STL search helper).
-// Used by assignGradeScreen()/approveEnrollmentScreen() so the admin can
-// correct the semester at the same time as the grade.
-bool GradeLinkedList::updateGradeAndSemesterByCourse(string code, string newGrade, string newSemester) {
-    GradeNode* current = head;
-    while (current != nullptr) {
-        if (current->data.getCourseCode() == code) {
-            current->data.setGrade(newGrade);
-            current->data.setSemester(newSemester);
             return true;
         }
         current = current->next;
@@ -1030,29 +855,6 @@ int findStudentIndexByID(string id) {
         if (studentArray[i]->getID() == id) return i;
     }
     return -1;
-}
-
-// Scans the fixed-size native studentArray[] for a duplicate email,
-// skipping the record whose ID equals excludeID (so a student editing
-// their OWN profile, or an admin editing one record, isn't falsely
-// flagged against itself). Pass excludeID = "" when checking a brand
-// new registration that has no ID yet. Plain indexed for-loop only -
-// no STL container or <algorithm> search routine is used.
-bool isEmailUnique(string email, string excludeID) {
-    for (int i = 0; i < studentCount; i++) {
-        if (studentArray[i]->getID() == excludeID) continue;
-        if (studentArray[i]->getEmail() == email) return false;
-    }
-    return true;
-}
-
-// Same pattern as isEmailUnique(), but checks IC number uniqueness.
-bool isICUnique(string ic, string excludeID) {
-    for (int i = 0; i < studentCount; i++) {
-        if (studentArray[i]->getID() == excludeID) continue;
-        if (studentArray[i]->getIC() == ic) return false;
-    }
-    return true;
 }
 
 int findCourseIndexByCode(string code) {
@@ -1453,6 +1255,49 @@ void showMainMenu() {
     }
 }
 
+// Helper 1: Manually validate email format (No STL)
+bool isValidEmailFormat(string email) {
+    int atIndex = -1;
+    int dotIndex = -1;
+    int atCount = 0;
+
+    for (int i = 0; i < email.length(); i++) {
+        if (email[i] == '@') {
+            atIndex = i;
+            atCount++;
+        } else if (email[i] == '.' && atIndex != -1) {
+            // Record the position of the last '.' that appears after the '@'
+            dotIndex = i; 
+        }
+    }
+
+    // Format rules:
+    // 1. Must contain exactly one '@'
+    if (atCount != 1) return false;
+    // 2. '@' cannot be the first character
+    if (atIndex == 0) return false;
+    // 3. Must have a '.' somewhere after the '@'
+    if (dotIndex == -1) return false;
+    // 4. '.' cannot immediately follow the '@' (e.g., user@.com is invalid)
+    if (dotIndex == atIndex + 1) return false;
+    // 5. '.' cannot be the last character
+    if (dotIndex == email.length() - 1) return false;
+
+    return true;
+}
+
+// Helper 2: Check if the email is already registered in the system
+bool isEmailDuplicate(string email) {
+    // Iterate through the currently loaded studentArray in memory
+    for (int i = 0; i < studentCount; i++) {
+        // Note: Ensure getEmail() matches the actual getter method in your Person/Student class
+        if (studentArray[i]->getEmail() == email) {
+            return true; // Duplicate found
+        }
+    }
+    return false;
+}
+
 // =====================================================================
 // SCREEN 1 - STUDENT REGISTRATION (real logic, with IC/phone validation)
 // =====================================================================
@@ -1470,6 +1315,7 @@ void studentRegistrationScreen() {
         if (name == "0") {
             return;
         }   
+
         int icAttempts = 0;
         do {
             cout << "Enter IC Number (must be exactly 12 digits): ";
@@ -1477,33 +1323,39 @@ void studentRegistrationScreen() {
             icAttempts++;
             if (!isValidIC(ic)) {
                 cout << "Invalid IC number. It must contain exactly 12 digits." << endl;
-            } else if (!isICUnique(ic, "")) {
-                cout << "This IC number is already registered to another student." << endl;
+                if (icAttempts >= 5) {
+                    throw runtime_error("Too many invalid IC attempts. Registration cancelled.");
+                }
             }
-            if ((!isValidIC(ic) || !isICUnique(ic, "")) && icAttempts >= 5) {
-                throw runtime_error("Too many invalid IC attempts. Registration cancelled.");
-            }
-        } while (!isValidIC(ic) || !isICUnique(ic, ""));
+        } while (!isValidIC(ic));
 
-        // Email must be well-formed (isValidEmail) AND not already used by
-        // another student (isEmailUnique) before registration proceeds.
+        // ==========================================
+        // [START of new Email validation logic]
+        // ==========================================
         int emailAttempts = 0;
+        bool validEmailFound = false;
         do {
-            cout << "Enter Email (or 0 to cancel): ";
+            cout << "Enter Email: ";
             cin >> email;
-            if (email == "0") {
-                return;
-            }
             emailAttempts++;
-            if (!isValidEmail(email)) {
-                cout << "Invalid email format." << endl;
-            } else if (!isEmailUnique(email, "")) {
-                cout << "This email is already registered to another student." << endl;
+
+            if (!isValidEmailFormat(email)) {
+                cout << "Invalid email format. Must contain '@' and a domain (e.g., user@email.com)." << endl;
+                if (emailAttempts >= 5) {
+                    throw runtime_error("Too many invalid email format attempts. Registration cancelled.");
+                }
+            } else if (isEmailDuplicate(email)) {
+                cout << "Email is already registered! Please use a different email." << endl;
+                if (emailAttempts >= 5) {
+                    throw runtime_error("Too many duplicate email attempts. Registration cancelled.");
+                }
+            } else {
+                validEmailFound = true; // Format is valid and no duplicates found
             }
-            if ((!isValidEmail(email) || !isEmailUnique(email, "")) && emailAttempts >= 5) {
-                throw runtime_error("Too many invalid email attempts. Registration cancelled.");
-            }
-        } while (!isValidEmail(email) || !isEmailUnique(email, ""));
+        } while (!validEmailFound);
+        // ==========================================
+        // [END of new Email validation logic]
+        // ==========================================
 
         cout << "Enter Password: ";
         cin >> password;
@@ -1542,8 +1394,7 @@ void studentRegistrationScreen() {
     }
 
     pauseScreen();
-}
-
+}            
 // =====================================================================
 // SCREEN 2 - STUDENT LOGIN (real logic)
 // =====================================================================
@@ -1689,27 +1540,10 @@ void updateProfileScreen(string studentID) {
         }
         else if (choice == 2) {
             string newEmail;
-            bool cancelled = false;
-            int emailAttempts = 0;
-            do {
-                cout << "Enter new Email (or 0 to cancel): ";
-                cin >> newEmail;
-                if (newEmail == "0") { cancelled = true; break; }
-
-                emailAttempts++;
-                if (!isValidEmail(newEmail)) {
-                    cout << "Invalid email format." << endl;
-                } else if (!isEmailUnique(newEmail, studentID)) {
-                    cout << "This email is already used by another student." << endl;
-                }
-                if ((!isValidEmail(newEmail) || !isEmailUnique(newEmail, studentID)) && emailAttempts >= 5) {
-                    throw runtime_error("Too many invalid email attempts. Update cancelled.");
-                }
-            } while (!isValidEmail(newEmail) || !isEmailUnique(newEmail, studentID));
-
-            if (cancelled) {
-                cout << "Update cancelled." << endl;
-                pauseScreen();
+            cout << "Enter new Email (or 0 to cancel): ";
+            cin >> newEmail;
+            if (newEmail == "0") {
+    
                 return;
             }
             studentArray[idx]->setEmail(newEmail);
@@ -1953,15 +1787,8 @@ void addEnrollmentScreen(string studentID) {
         }
     }
 
-    string semester = promptSemesterInput("Enter the Semester you are enrolling for");
-    if (semester == "0") {
-        cout << "Enrollment cancelled." << endl;
-        pauseScreen();
-        return;
-    }
-
     GradeEntry newEntry(studentID, sortedCourses[courseIdx].code, sortedCourses[courseIdx].name,
-                         sortedCourses[courseIdx].credit, "Pending", semester);
+                         sortedCourses[courseIdx].credit, "Pending", "Sem2-2026");
     studentArray[idx]->getGradeList()->insert(newEntry);
     rewriteGradesFile();
 
@@ -2026,16 +1853,6 @@ void editPendingEnrollmentScreen(string studentID) {
         return;
     }
 
-    // Ask for the semester BEFORE touching the linked list, so if the
-    // student cancels here the original pending enrollment is left
-    // completely untouched (no remove/restore juggling needed).
-    string semester = promptSemesterInput("Enter the Semester for this enrollment");
-    if (semester == "0") {
-        cout << "Enrollment edit cancelled." << endl;
-        pauseScreen();
-        return;
-    }
-
     bool removed = studentArray[idx]->getGradeList()->removeByCourse(oldCode);
     if (!removed) {
         cout << "Original pending enrollment not found (was it already approved?)." << endl;
@@ -2043,7 +1860,7 @@ void editPendingEnrollmentScreen(string studentID) {
         return;
     }
 
-    GradeEntry replacement(studentID, courseArray[courseIdx].code, courseArray[courseIdx].name,courseArray[courseIdx].credit, "Pending", semester);
+    GradeEntry replacement(studentID, courseArray[courseIdx].code, courseArray[courseIdx].name,courseArray[courseIdx].credit, "Pending", "Sem2-2026");
     studentArray[idx]->getGradeList()->insert(replacement);
     rewriteGradesFile();
 
@@ -2291,31 +2108,14 @@ void addStudentScreen() {
             icAttempts++;
             if (!isValidIC(ic)) {
                 cout << "Invalid IC number. It must contain exactly 12 digits." << endl;
-            } else if (!isICUnique(ic, "")) {
-                cout << "This IC number is already registered to another student." << endl;
+                if (icAttempts >= 5) {
+                    throw runtime_error("Too many invalid IC attempts. Operation cancelled.");
+                }
             }
-            if ((!isValidIC(ic) || !isICUnique(ic, "")) && icAttempts >= 5) {
-                throw runtime_error("Too many invalid IC attempts. Operation cancelled.");
-            }
-        } while (!isValidIC(ic) || !isICUnique(ic, ""));
+        } while (!isValidIC(ic));
 
-        int emailAttempts = 0;
-        do {
-            cout << "Enter Email (or 0 to cancel): ";
-            cin >> email;
-            if (email == "0") {
-                return;
-            }
-            emailAttempts++;
-            if (!isValidEmail(email)) {
-                cout << "Invalid email format." << endl;
-            } else if (!isEmailUnique(email, "")) {
-                cout << "This email is already registered to another student." << endl;
-            }
-            if ((!isValidEmail(email) || !isEmailUnique(email, "")) && emailAttempts >= 5) {
-                throw runtime_error("Too many invalid email attempts. Operation cancelled.");
-            }
-        } while (!isValidEmail(email) || !isEmailUnique(email, ""));
+        cout << "Enter Email: ";
+        cin >> email;
 
         cout << "Enter Password: ";
         cin >> password;
@@ -2440,24 +2240,14 @@ void editStudentScreen() {
 	        }
 	        case 4: {
 	            string newEmail;
-	            bool cancelled = false;
 	            do{
-	            	cout << "Enter new Email (or 0 to cancel): ";
+	            	cout << "Enter new Email: ";
 	            	cin >> newEmail;
-	            	if (newEmail == "0") { cancelled = true; break; }
-
-	            	if (!isValidEmail(newEmail)) {
-	            	    cout << "Invalid email format." << endl;
-	            	} else if (!isEmailUnique(newEmail, studentArray[idx]->getID())) {
-	            	    cout << "This email is already used by another student." << endl;
-	            	}
-				}while(!isValidEmail(newEmail) || !isEmailUnique(newEmail, studentArray[idx]->getID()));
-
-				if (cancelled) {
-				    cout << "Email edit cancelled." << endl;
-				    break;
-				}
-
+	            	
+	            	if(!isValidEmail(newEmail))
+	            	cout<<"Invalid email format."<<endl;
+				}while(!isValidEmail(newEmail));
+				
 	            studentArray[idx]->setEmail(newEmail);
 	            cout << "Email updated." << endl;
 	            break;
@@ -2618,12 +2408,8 @@ void addCourseScreen() {
     cin.ignore();
     getline(cin, c.name);
 
-    cout << "Enter Credit Hours (must be between 1 and 8): ";
+    cout << "Enter Credit Hours: ";
     c.credit = readIntInput();
-    while (c.credit < 1 || c.credit > 8) {
-        cout << "Invalid credit value. Please enter a number between 1 and 8: ";
-        c.credit = readIntInput();
-    }
 
     cout << "Enter Year (e.g. Year1): ";
     cin >> c.year;
@@ -2682,12 +2468,8 @@ void editCourseScreen() {
             getline(cin, courseArray[idx].name);
             break;
         case 2:
-            cout << "Enter new Credit Hours (must be between 1 and 8): ";
+            cout << "Enter new Credit Hours: ";
             courseArray[idx].credit = readIntInput();
-            while (courseArray[idx].credit < 1 || courseArray[idx].credit > 8) {
-                cout << "Invalid credit value. Please enter a number between 1 and 8: ";
-                courseArray[idx].credit = readIntInput();
-            }
             break;
         case 3:
             cout << "Enter new Department: ";
@@ -2848,61 +2630,20 @@ void assignGradeScreen() {
         return;
     }
 
-    // Grade whitelist validation loop - anything outside the fixed
-    // letter-grade set (checked by isValidGradeFormat) is rejected and
-    // re-prompted, up to 5 attempts before the operation is cancelled.
+    cout << "Enter Grade (e.g. A, A-, B+, F, or 0 to cancel): ";
     string grade;
-    int gradeAttempts = 0;
-    while (true) {
-        cout << "Enter Grade (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F, Pending, or 0 to cancel): ";
-        cin >> grade;
-        if (grade == "0") {
-            return;
-        }
-        if (isValidGradeFormat(grade)) break;
+    cin >> grade;
 
-        cout << "Invalid grade code. Please use one of the accepted grade values." << endl;
-        gradeAttempts++;
-        if (gradeAttempts >= 5) {
-            cout << "Too many invalid attempts. Operation cancelled." << endl;
-            pauseScreen();
-            return;
-        }
-    }
-
-    // Check whether this student already has a record for this course so
-    // we can show the admin its current semester before they overwrite it.
-    GradeEntry tempArr[MAX_TEMP_GRADES];
-    int n = 0;
-    studentArray[idx]->getGradeList()->toArray(tempArr, n);
-
-    bool existingRecord = false;
-    string currentSemester = "";
-    for (int i = 0; i < n; i++) {
-        if (tempArr[i].getCourseCode() == code) {
-            existingRecord = true;
-            currentSemester = tempArr[i].getTerm().semester;
-            break;
-        }
-    }
-
-    if (existingRecord) {
-        cout << "This record currently shows Semester: " << currentSemester
-             << ". You may now enter the correct/updated Semester below." << endl;
-    }
-
-    string semester = promptSemesterInput("Enter the Semester for this grade record");
-    if (semester == "0") {
-        cout << "Operation cancelled." << endl;
-        pauseScreen();
+    if (grade == "0") {
+        
         return;
     }
 
-    bool updated = studentArray[idx]->getGradeList()->updateGradeAndSemesterByCourse(code, grade, semester);
+    bool updated = studentArray[idx]->getGradeList()->updateGradeByCourse(code, grade);
 
     if (!updated) {
         // Course isn't on this student's record yet - look it up in the
-        // catalog and add it directly with the given grade and semester.
+        // catalog and add it directly with the given grade.
         int courseIdx = findCourseIndexByCode(code);
         if (courseIdx == -1) {
             cout << "Course code not found in catalog and student has no record for it." << endl;
@@ -2910,7 +2651,7 @@ void assignGradeScreen() {
             return;
         }
         GradeEntry newEntry(id, courseArray[courseIdx].code, courseArray[courseIdx].name,
-                             courseArray[courseIdx].credit, grade, semester);
+                             courseArray[courseIdx].credit, grade, "Sem2-2026");
         studentArray[idx]->getGradeList()->insert(newEntry);
     }
 
@@ -2973,46 +2714,16 @@ void approveEnrollmentScreen() {
         return;
     }
 
-    // Grade whitelist validation loop, same rule set as assignGradeScreen().
+    cout << "Enter the Grade to assign (e.g. A, A-, B+, or 0 to cancel): ";
     string grade;
-    int gradeAttempts = 0;
-    while (true) {
-        cout << "Enter the Grade to assign (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F, Pending, or 0 to cancel): ";
-        cin >> grade;
-        if (grade == "0") {
-            return;
-        }
-        if (isValidGradeFormat(grade)) break;
+    cin >> grade;
 
-        cout << "Invalid grade code. Please use one of the accepted grade values." << endl;
-        gradeAttempts++;
-        if (gradeAttempts >= 5) {
-            cout << "Too many invalid attempts. Operation cancelled." << endl;
-            pauseScreen();
-            return;
-        }
-    }
-
-    // Find the current semester on the pending record so the admin can
-    // confirm it or correct it as part of the approval step.
-    string currentSemester = "";
-    for (int i = 0; i < n; i++) {
-        if (tempArr[i].getCourseCode() == code) {
-            currentSemester = tempArr[i].getTerm().semester;
-            break;
-        }
-    }
-    cout << "This pending enrollment currently shows Semester: " << currentSemester
-         << ". Confirm or correct it below." << endl;
-
-    string semester = promptSemesterInput("Enter the Semester to finalize for this approval");
-    if (semester == "0") {
-        cout << "Operation cancelled." << endl;
-        pauseScreen();
+    if (grade == "0") {
+        
         return;
     }
 
-    bool updated = studentArray[idx]->getGradeList()->updateGradeAndSemesterByCourse(code, grade, semester);
+    bool updated = studentArray[idx]->getGradeList()->updateGradeByCourse(code, grade);
     if (!updated) {
         cout << "Course code not found in this student's pending list." << endl;
         pauseScreen();

@@ -1,17 +1,13 @@
 ============================================================
               STUDENT ACADEMIC SUMMARY REPORT
 ============================================================
-Student ID : S016
-Name       : LIU JIUN LE
+Student ID : S017
+Name       : zhejun
 Program    : IT
 ============================================================
 Code      Course Name              Credit  Grade     Semester       
 ============================================================
-CS101     Programming Fundamentals 3       C         Sem2-2026      
-MATH101   Calculus I               3       F         Sem2-2026      
-WEB101    Web Development          3       6         Sem2-2026      
-TDS4223   DATA STRUCTURE AND ALGORITHMS2       F         Sem2-2026      
 ============================================================
-Total Credits Completed : 8
-Cumulative GPA          : 0.75
+Total Credits Completed : 0
+Cumulative GPA          : 0.00
 ============================================================
