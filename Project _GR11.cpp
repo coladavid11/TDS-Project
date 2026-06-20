@@ -1437,7 +1437,7 @@ void updateProfileScreen(string studentID) {
     cout << "1. Update Phone Number" << endl;
     cout << "2. Update Email" << endl;
     cout << "3. Update Password" << endl;
-    cout << "4. Back" << endl;
+    cout << "0. Back" << endl;
     cout << "Enter your choice: ";
     int choice;
     choice = readIntInput();
@@ -1446,9 +1446,11 @@ void updateProfileScreen(string studentID) {
         if (choice == 1) {
             string newPhone;
             int attempts = 0;
-            do {
-                cout << "Enter new Phone Number (numeric, below 12 digits): ";
+            bool cancelled = false;
+            do {cout << "Note: Phone number must be numeric and below 12 digits." << endl;
+                cout << "Enter new Phone Number (0 to cancel): ";
                 cin >> newPhone;
+                if (newPhone == "0") { cancelled = true; break; }
                 attempts++;
                 if (!isValidPhone(newPhone)) {
                     cout << "Invalid phone number." << endl;
@@ -1457,24 +1459,60 @@ void updateProfileScreen(string studentID) {
                     }
                 }
             } while (!isValidPhone(newPhone));
+
+            if (cancelled) {
+                
+                return;
+            }
             studentArray[idx]->setPhone(newPhone);
             cout << "Phone number updated." << endl;
         }
         else if (choice == 2) {
             string newEmail;
-            cout << "Enter new Email: ";
+            cout << "Enter new Email (or 0 to cancel): ";
             cin >> newEmail;
+            if (newEmail == "0") {
+    
+                return;
+            }
             studentArray[idx]->setEmail(newEmail);
             cout << "Email updated." << endl;
         }
         else if (choice == 3) {
-            string newPassword;
-            cout << "Enter new Password: ";
-            cin >> newPassword;
+            // Require the new password to be entered twice so the student
+            // doesn't accidentally lock themselves out with a typo.
+            string newPassword, confirmPassword;
+            int mismatchAttempts = 0;
+            bool cancelled = false;
+
+            while (true) {
+                cout << "Enter new Password (or 0 to cancel): ";
+                cin >> newPassword;
+                if (newPassword == "0") { cancelled = true; break; }
+
+                cout << "Confirm new Password (or 0 to cancel): ";
+                cin >> confirmPassword;
+                if (confirmPassword == "0") { cancelled = true; break; }
+
+                if (newPassword == confirmPassword) {
+                    break; // confirmed match, proceed to save
+                }
+
+                mismatchAttempts++;
+                cout << "Passwords do not match. Please try again." << endl;
+                if (mismatchAttempts >= 5) {
+                    throw runtime_error("Too many mismatched attempts. Update cancelled.");
+                }
+            }
+
+            if (cancelled) {
+        
+                return;
+            }
             studentArray[idx]->setPassword(newPassword);
             cout << "Password updated." << endl;
         }
-        else if (choice == 4) {
+        else if (choice == 0) {
             return;
         }
         else {
@@ -1729,9 +1767,13 @@ void editPendingEnrollmentScreen(string studentID) {
         return;
     }
 
-    cout << "Enter the new Course Code you want instead: ";
+    cout << "Enter the new Course Code you want instead (0 to cancel): ";
     string newCode;
     cin >> newCode;
+
+    if (newCode == "0") {
+        return;
+    }
 
     int courseIdx = findCourseIndexByCode(newCode);
     if (courseIdx == -1) {
