@@ -1264,6 +1264,49 @@ void showMainMenu() {
     }
 }
 
+// Helper 1: Manually validate email format (No STL)
+bool isValidEmailFormat(string email) {
+    int atIndex = -1;
+    int dotIndex = -1;
+    int atCount = 0;
+
+    for (int i = 0; i < email.length(); i++) {
+        if (email[i] == '@') {
+            atIndex = i;
+            atCount++;
+        } else if (email[i] == '.' && atIndex != -1) {
+            // Record the position of the last '.' that appears after the '@'
+            dotIndex = i; 
+        }
+    }
+
+    // Format rules:
+    // 1. Must contain exactly one '@'
+    if (atCount != 1) return false;
+    // 2. '@' cannot be the first character
+    if (atIndex == 0) return false;
+    // 3. Must have a '.' somewhere after the '@'
+    if (dotIndex == -1) return false;
+    // 4. '.' cannot immediately follow the '@' (e.g., user@.com is invalid)
+    if (dotIndex == atIndex + 1) return false;
+    // 5. '.' cannot be the last character
+    if (dotIndex == email.length() - 1) return false;
+
+    return true;
+}
+
+// Helper 2: Check if the email is already registered in the system
+bool isEmailDuplicate(string email) {
+    // Iterate through the currently loaded studentArray in memory
+    for (int i = 0; i < studentCount; i++) {
+        // Note: Ensure getEmail() matches the actual getter method in your Person/Student class
+        if (studentArray[i]->getEmail() == email) {
+            return true; // Duplicate found
+        }
+    }
+    return false;
+}
+
 // =====================================================================
 // SCREEN 1 - STUDENT REGISTRATION (real logic, with IC/phone validation)
 // =====================================================================
@@ -1281,6 +1324,7 @@ void studentRegistrationScreen() {
         if (name == "0") {
             return;
         }   
+
         int icAttempts = 0;
         do {
             cout << "Enter IC Number (must be exactly 12 digits): ";
@@ -1294,8 +1338,33 @@ void studentRegistrationScreen() {
             }
         } while (!isValidIC(ic));
 
-        cout << "Enter Email: ";
-        cin >> email;
+        // ==========================================
+        // [START of new Email validation logic]
+        // ==========================================
+        int emailAttempts = 0;
+        bool validEmailFound = false;
+        do {
+            cout << "Enter Email: ";
+            cin >> email;
+            emailAttempts++;
+
+            if (!isValidEmailFormat(email)) {
+                cout << "Invalid email format. Must contain '@' and a domain (e.g., user@email.com)." << endl;
+                if (emailAttempts >= 5) {
+                    throw runtime_error("Too many invalid email format attempts. Registration cancelled.");
+                }
+            } else if (isEmailDuplicate(email)) {
+                cout << "Email is already registered! Please use a different email." << endl;
+                if (emailAttempts >= 5) {
+                    throw runtime_error("Too many duplicate email attempts. Registration cancelled.");
+                }
+            } else {
+                validEmailFound = true; // Format is valid and no duplicates found
+            }
+        } while (!validEmailFound);
+        // ==========================================
+        // [END of new Email validation logic]
+        // ==========================================
 
         cout << "Enter Password: ";
         cin >> password;
@@ -1334,8 +1403,7 @@ void studentRegistrationScreen() {
     }
 
     pauseScreen();
-}
-
+}            
 // =====================================================================
 // SCREEN 2 - STUDENT LOGIN (real logic)
 // =====================================================================
