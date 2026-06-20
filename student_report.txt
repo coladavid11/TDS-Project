@@ -11,7 +11,6 @@ CS101     Programming Fundamentals 3       A         Sem1-2024
 MATH101   Calculus I               3       B+        Sem1-2024      
 DS201     Data Structures          3       A-        Sem2-2024      
 DB101     Database Systems         3       B         Sem2-2024      
-WEB101    Web Development          3       Pending   Sem2-2026      
 STAT201   Probability & Statistics 3       Pending   Sem2-2026      
 ============================================================
 Total Credits Completed : 12

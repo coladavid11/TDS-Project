@@ -1,1 +1,23 @@
-None
+============================================================
+           DEPARTMENT ACADEMIC SUMMARY REPORT
+============================================================
+Total Students        : 11
+Total Courses Offered : 10
+Overall Average GPA   : 2.97
+============================================================
+
+Average GPA by Program:
+------------------------------------------------------------
+CS        Students: 4    Avg GPA: 3.56
+IT        Students: 4    Avg GPA: 2.33
+SE        Students: 3    Avg GPA: 3.03
+
+Top Students by GPA:
+------------------------------------------------------------
+ID      Name                Program   GPA     
+S003    Tan Wei Meng        CS        3.60    
+S009    Muhammad Rizwan     CS        3.60    
+S002    Siti Nurhaliza      IT        3.56    
+S006    Chong Jin Hao       CS        3.53    
+S007    Fatima Zahra        SE        3.50    
+============================================================

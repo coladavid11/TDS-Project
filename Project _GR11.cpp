@@ -39,7 +39,7 @@ const int MAX_TEMP_GRADES = 100; // scratch array size for sort/search extractio
 // Clears the console screen. Dev C++ on Windows -> system("cls")
 void clearScreen() {
     system("cls");
-}
+    }
 
 // Pauses until Enter is pressed, then returns control to the caller.
 void pauseScreen() {
@@ -146,6 +146,18 @@ bool isValidIC(string ic) {
 // me if you want a different minimum).
 bool isValidPhone(string phone) {
     return isAllDigits(phone) && (int)phone.length() >= 9 && (int)phone.length() < 12;
+}
+
+// EMAIL RULE: must contain exactly one '@' symbol, and it cannot
+// be the first or last character of the email address.
+// This is a simple validation for the Student Management System.
+bool isValidEmail(string email)
+{
+    size_t atPos = email.find('@');
+
+    return atPos != string::npos &&
+           atPos > 0 &&
+           atPos < email.length() - 1;
 }
 
 // Converts "SemX-YYYY" into a single comparable integer key, e.g.
@@ -1262,10 +1274,13 @@ void studentRegistrationScreen() {
     try {
         string name, ic, email, password, phone, program;
 
-        cout << "Enter Name: ";
+        cout << "Enter Name (0 to cancel): ";
         cin.ignore();
         getline(cin, name);
 
+        if (name == "0") {
+            return;
+        }   
         int icAttempts = 0;
         do {
             cout << "Enter IC Number (must be exactly 12 digits): ";
@@ -1329,8 +1344,11 @@ void studentLoginScreen() {
     cout << "============ STUDENT LOGIN =============" << endl;
 
     string id, password;
-    cout << "Enter Student ID: ";
+    cout << "Enter Student ID (0 to cancel): ";
     cin >> id;
+    if (id == "0") {
+        return;
+    }       
     cout << "Enter Password: ";
     cin >> password;
 
@@ -1413,7 +1431,8 @@ void viewProfileScreen(string studentID) {
     } else {
         studentArray[idx]->displayProfile();
     }
-    pauseScreen();
+    
+    pauseScreen();        
 }
 
 void updateProfileScreen(string studentID) {
@@ -1430,6 +1449,7 @@ void updateProfileScreen(string studentID) {
     cout << "1. Update Phone Number" << endl;
     cout << "2. Update Email" << endl;
     cout << "3. Update Password" << endl;
+    cout << "0. Back" << endl;
     cout << "Enter your choice: ";
     int choice;
     choice = readIntInput();
@@ -1438,9 +1458,11 @@ void updateProfileScreen(string studentID) {
         if (choice == 1) {
             string newPhone;
             int attempts = 0;
-            do {
-                cout << "Enter new Phone Number (numeric, below 12 digits): ";
+            bool cancelled = false;
+            do {cout << "Note: Phone number must be numeric and below 12 digits." << endl;
+                cout << "Enter new Phone Number (0 to cancel): ";
                 cin >> newPhone;
+                if (newPhone == "0") { cancelled = true; break; }
                 attempts++;
                 if (!isValidPhone(newPhone)) {
                     cout << "Invalid phone number." << endl;
@@ -1449,22 +1471,61 @@ void updateProfileScreen(string studentID) {
                     }
                 }
             } while (!isValidPhone(newPhone));
+
+            if (cancelled) {
+                
+                return;
+            }
             studentArray[idx]->setPhone(newPhone);
             cout << "Phone number updated." << endl;
         }
         else if (choice == 2) {
             string newEmail;
-            cout << "Enter new Email: ";
+            cout << "Enter new Email (or 0 to cancel): ";
             cin >> newEmail;
+            if (newEmail == "0") {
+    
+                return;
+            }
             studentArray[idx]->setEmail(newEmail);
             cout << "Email updated." << endl;
         }
         else if (choice == 3) {
-            string newPassword;
-            cout << "Enter new Password: ";
-            cin >> newPassword;
+            // Require the new password to be entered twice so the student
+            // doesn't accidentally lock themselves out with a typo.
+            string newPassword, confirmPassword;
+            int mismatchAttempts = 0;
+            bool cancelled = false;
+
+            while (true) {
+                cout << "Enter new Password (or 0 to cancel): ";
+                cin >> newPassword;
+                if (newPassword == "0") { cancelled = true; break; }
+
+                cout << "Confirm new Password (or 0 to cancel): ";
+                cin >> confirmPassword;
+                if (confirmPassword == "0") { cancelled = true; break; }
+
+                if (newPassword == confirmPassword) {
+                    break; // confirmed match, proceed to save
+                }
+
+                mismatchAttempts++;
+                cout << "Passwords do not match. Please try again." << endl;
+                if (mismatchAttempts >= 5) {
+                    throw runtime_error("Too many mismatched attempts. Update cancelled.");
+                }
+            }
+
+            if (cancelled) {
+        
+                return;
+            }
             studentArray[idx]->setPassword(newPassword);
             cout << "Password updated." << endl;
+        }
+        else if (choice == 0) {
+            return;
         }
         else {
             cout << "Invalid choice." << endl;
@@ -1499,7 +1560,9 @@ void viewGradesScreen(string studentID) {
     } else {
         studentArray[idx]->getGradeList()->displayAll();
     }
+
     pauseScreen();
+    
 }
 
 void searchGradeScreen(string studentID) {
@@ -1525,9 +1588,13 @@ void searchGradeScreen(string studentID) {
 
     quickSort(tempArr, 0, n - 1, "CODE"); // binary search requires sorted data
 
-    cout << "Enter Course Code to search: ";
+    cout << "Enter Course Code to search (0 to cancel): ";
     string code;
     cin >> code;
+
+    if (code == "0") {
+        return;
+    }
 
     int result = binarySearch(tempArr, n, code);
 
@@ -1553,6 +1620,7 @@ void sortGradesScreen(string studentID) {
     cout << "========== SORT MY GRADES ==========" << endl;
     cout << "1. Sort by Grade (Highest to Lowest)" << endl;
     cout << "2. Sort by Semester (Oldest to Newest)" << endl;
+    cout << "3. Back" << endl;
     cout << "Enter your choice: ";
     int choice;
     choice = readIntInput();
@@ -1578,6 +1646,8 @@ void sortGradesScreen(string studentID) {
         quickSort(tempArr, 0, n - 1, "GRADE");
     } else if (choice == 2) {
         quickSort(tempArr, 0, n - 1, "SEMESTER");
+    } else if (choice == 3) {
+        return;
     } else {
         cout << "Invalid choice." << endl;
         pauseScreen();
@@ -1627,9 +1697,13 @@ void addEnrollmentScreen(string studentID) {
          << courseArray[i].credit << " credit(s)" << endl;
     }
 
-    cout << "\nEnter Course Code to enroll: ";
+    cout << "\nEnter Course Code to enroll (0 to cancel): ";
     string code;
     cin >> code;
+
+    if (code == "0") {
+        return;
+    }
 
     // Search the course catalog using binary search (2nd search feature)
     Course sortedCourses[MAX_COURSES];
@@ -1697,14 +1771,21 @@ void editPendingEnrollmentScreen(string studentID) {
         return;
     }
 
-    cout << "\nEnter the Course Code of the pending enrollment to change: ";
+    cout << "\nEnter the Course Code of the pending enrollment to change (0 to cancel): ";
     string oldCode;
     cin >> oldCode;
 
-    
-    cout << "Enter the new Course Code you want instead: ";
+    if (oldCode == "0") {
+        return;
+    }
+
+    cout << "Enter the new Course Code you want instead (0 to cancel): ";
     string newCode;
     cin >> newCode;
+
+    if (newCode == "0") {
+        return;
+    }
 
     int courseIdx = findCourseIndexByCode(newCode);
     if (courseIdx == -1) {
@@ -1720,8 +1801,7 @@ void editPendingEnrollmentScreen(string studentID) {
         return;
     }
 
-    GradeEntry replacement(studentID, courseArray[courseIdx].code, courseArray[courseIdx].name,
-                            courseArray[courseIdx].credit, "Pending", "Sem2-2026");
+    GradeEntry replacement(studentID, courseArray[courseIdx].code, courseArray[courseIdx].name,courseArray[courseIdx].credit, "Pending", "Sem2-2026");
     studentArray[idx]->getGradeList()->insert(replacement);
     rewriteGradesFile();
 
@@ -1733,14 +1813,8 @@ void dropCourseScreen(string studentID) {
     clearScreen();
     cout << "============ DROP A COURSE ============" << endl;
     cout<< "Note: You can only drop courses that are currently in your records." << endl;
-    cout<<left
-        << setw(12) << "Student ID"
-        << setw(12) << "Code"
-        << setw(35) << "Course Name"
-        << setw(8)  << "Credit"
-        << setw(10) << "Grade"
-        << setw(15) << "Semester" << endl;
-        cout << "-------------------------------------------------------------------------------------" << endl;
+    cout<<left<< setw(12) << "Student ID"<< setw(12) << "Code"<< setw(35) << "Course Name"<< setw(8)  << "Credit"<< setw(10) << "Grade"<< setw(15) << "Semester" << endl;
+    cout << "-------------------------------------------------------------------------------------" << endl;
 
     int idx = findStudentIndexByID(studentID);
     if (idx == -1) {
@@ -1751,9 +1825,13 @@ void dropCourseScreen(string studentID) {
 
     studentArray[idx]->getGradeList()->displayAll();
 
-    cout << "\nEnter Course Code to drop: ";
+    cout << "\nEnter Course Code to drop (0 to cancel): ";
     string code;
     cin >> code;
+
+    if (code == "0") {
+        return;
+    }
 
     bool removed = studentArray[idx]->getGradeList()->removeByCourse(code);
     if (removed) {
@@ -1778,7 +1856,9 @@ void saveStudentReportScreen(string studentID) {
 
     generateStudentReport(studentArray[idx]);
     cout << "Report saved to student_report.txt" << endl;
-    pauseScreen();
+
+    pauseScreen();    
+    
 }
 
 void viewStudentReportScreen(string studentID) {
@@ -1798,7 +1878,7 @@ void viewStudentReportScreen(string studentID) {
     }
     inFile.close();
 
-    pauseScreen();
+    pauseScreen();     
 }
 
 // =====================================================================
@@ -1955,8 +2035,7 @@ void addStudentScreen() {
         getline(cin, name);
 
         if (name == "0") {
-            cout << "Cancelled." << endl;
-            pauseScreen();
+            
             return;
         }
 
@@ -1964,7 +2043,9 @@ void addStudentScreen() {
         do {
             cout << "Enter IC Number (must be exactly 12 digits, or 0 to cancel): ";
             cin >> ic;
-            if (ic == "0") { cout << "Cancelled." << endl; pauseScreen(); return; }
+            if (ic == "0") { 
+                return;
+            }
             icAttempts++;
             if (!isValidIC(ic)) {
                 cout << "Invalid IC number. It must contain exactly 12 digits." << endl;
@@ -1984,7 +2065,9 @@ void addStudentScreen() {
         do {
             cout << "Enter Phone Number (numeric, below 12 digits, or 0 to cancel): ";
             cin >> phone;
-            if (phone == "0") { cout << "Cancelled." << endl; pauseScreen(); return; }
+            if (phone == "0") {   
+                return; 
+            }
             phoneAttempts++;
             if (!isValidPhone(phone)) {
                 cout << "Invalid phone number. Must be numeric and below 12 digits." << endl;
@@ -2030,8 +2113,7 @@ void editStudentScreen() {
     cin >> id;
 
     if (id == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2041,78 +2123,90 @@ void editStudentScreen() {
         pauseScreen();
         return;
     }
-
-    studentArray[idx]->displayProfile();
-
-    cout << "\n1. Edit Name" << endl;
-    cout << "2. Edit Program" << endl;
-    cout << "3. Edit Phone" << endl;
-    cout << "4. Edit Email" << endl;
-    cout << "0. Back (cancel edit)" << endl;
-    cout << "Enter your choice: ";
-    int choice = readIntInput();
-
-    switch (choice) {
-        case 1: {
-            string newName;
-            cout << "Enter new Name: ";
-            cin.ignore();
-            getline(cin, newName);
-            studentArray[idx]->setName(newName);
-            cout << "Name updated." << endl;
-            break;
-        }
-        case 2: {
-            string newProgram;
-            cout << "Enter new Program: ";
-            cin >> newProgram;
-            studentArray[idx]->setProgram(newProgram);
-            cout << "Program updated." << endl;
-            break;
-        }
-        case 3: {
-            string newPhone;
-            int attempts = 0;
-            bool cancelled = false;
-            do {
-                cout << "Enter new Phone (numeric, below 12 digits, or 0 to cancel): ";
-                cin >> newPhone;
-                if (newPhone == "0") { cancelled = true; break; }
-                attempts++;
-                if (!isValidPhone(newPhone)) {
-                    cout << "Invalid phone number." << endl;
-                    if (attempts >= 5) {
-                        cout << "Too many invalid attempts. Edit cancelled." << endl;
-                        pauseScreen();
-                        return;
-                    }
-                }
-            } while (!isValidPhone(newPhone));
-            if (cancelled) { cout << "Cancelled." << endl; pauseScreen(); return; }
-            studentArray[idx]->setPhone(newPhone);
-            cout << "Phone updated." << endl;
-            break;
-        }
-        case 4: {
-            string newEmail;
-            cout << "Enter new Email: ";
-            cin >> newEmail;
-            studentArray[idx]->setEmail(newEmail);
-            cout << "Email updated." << endl;
-            break;
-        }
-        case 0:
-            cout << "Cancelled." << endl;
-            pauseScreen();
-            return;
-        default:
-            cout << "Invalid choice." << endl;
-            pauseScreen();
-            return;
+    
+    while (true)
+    {
+	    studentArray[idx]->displayProfile();
+	
+	    cout << "\n1. Edit Name" << endl;
+	    cout << "2. Edit Program" << endl;
+	    cout << "3. Edit Phone" << endl;
+	    cout << "4. Edit Email" << endl;
+	    cout << "0. Back (cancel edit)" << endl;
+	    cout << "Enter your choice: ";
+	    int choice = readIntInput();
+	
+	    switch (choice) {
+	        case 1: {
+	            string newName;
+	            cout << "Enter new Name: ";
+	            cin.ignore();
+	            getline(cin, newName);
+	            studentArray[idx]->setName(newName);
+	            cout << "Name updated." << endl;
+	            break;
+	        }
+	        case 2: {
+	            string newProgram;
+	            cout << "Enter new Program: ";
+	            cin >> newProgram;
+	            studentArray[idx]->setProgram(newProgram);
+	            cout << "Program updated." << endl;
+	            break;
+	        }
+	        case 3: {
+	            string newPhone;
+	            int attempts = 0;
+	            bool cancelled = false;
+	            do {
+	                cout << "Enter new Phone (numeric, below 12 digits, or 0 to cancel): ";
+	                cin >> newPhone;
+	                if (newPhone == "0") { cancelled = true; break; }
+	                attempts++;
+	                if (!isValidPhone(newPhone)) {
+	                    cout << "Invalid phone number." << endl;
+	                    if (attempts >= 5) {
+	                        cout << "Too many invalid attempts. Edit cancelled." << endl;
+	                        pauseScreen();
+	                        break;
+	                    }
+	                }
+	            } while (!isValidPhone(newPhone));
+	            if (cancelled) { 
+	             break; 
+	            }
+	            studentArray[idx]->setPhone(newPhone);
+	            cout << "Phone updated." << endl;
+	            break;
+	        }
+	        case 4: {
+	            string newEmail;
+	            do{
+	            	cout << "Enter new Email: ";
+	            	cin >> newEmail;
+	            	
+	            	if(!isValidEmail(newEmail))
+	            	cout<<"Invalid email format."<<endl;
+				}while(!isValidEmail(newEmail));
+				
+	            studentArray[idx]->setEmail(newEmail);
+	            cout << "Email updated." << endl;
+	            break;
+	        }
+	        case 0:
+	            return;
+	        default:
+	            cout << "Invalid choice." << endl;
+	            
+	            continue;
+	    }
+	
+	    rewriteStudentsFile();
+	    
+	    cout<<"\nUpdated Student Information:\n";
+	    
+	    pauseScreen();
     }
-
-    rewriteStudentsFile();
-    pauseScreen();
 }
 
 void deleteStudentScreen() {
@@ -2121,7 +2215,7 @@ void deleteStudentScreen() {
 
     if (studentCount == 0) {
         cout << "No student records found." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2130,8 +2224,7 @@ void deleteStudentScreen() {
     cin >> id;
 
     if (id == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2149,9 +2242,7 @@ void deleteStudentScreen() {
     cout << "Enter your choice: ";
     int confirm = readIntInput();
 
-    if (confirm != 1) {
-        cout << "Deletion cancelled." << endl;
-        pauseScreen();
+    if (confirm != 1) {   
         return;
     }
 
@@ -2244,8 +2335,7 @@ void addCourseScreen() {
     cin >> c.code;
 
     if (c.code == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2291,8 +2381,7 @@ void editCourseScreen() {
     cin >> code;
 
     if (code == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2328,8 +2417,7 @@ void editCourseScreen() {
             cin >> courseArray[idx].department;
             break;
         case 0:
-            cout << "Cancelled." << endl;
-            pauseScreen();
+            
             return;
         default:
             cout << "Invalid choice." << endl;
@@ -2357,8 +2445,7 @@ void deleteCourseScreen() {
     cin >> code;
 
     if (code == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2377,8 +2464,6 @@ void deleteCourseScreen() {
     int confirm = readIntInput();
 
     if (confirm != 1) {
-        cout << "Deletion cancelled." << endl;
-        pauseScreen();
         return;
     }
 
@@ -2432,8 +2517,7 @@ void viewGradesForStudentScreen() {
     cin >> id;
 
     if (id == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+    
         return;
     }
 
@@ -2465,8 +2549,7 @@ void assignGradeScreen() {
     cin >> id;
 
     if (id == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2484,8 +2567,7 @@ void assignGradeScreen() {
     cin >> code;
 
     if (code == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2494,8 +2576,7 @@ void assignGradeScreen() {
     cin >> grade;
 
     if (grade == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2535,8 +2616,7 @@ void approveEnrollmentScreen() {
     cin >> id;
 
     if (id == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2571,8 +2651,7 @@ void approveEnrollmentScreen() {
     cin >> code;
 
     if (code == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2581,8 +2660,7 @@ void approveEnrollmentScreen() {
     cin >> grade;
 
     if (grade == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2615,6 +2693,7 @@ void sortStudentsScreen() {
     int choice = readIntInput();
 
     if (choice == 0) {
+
         return;
     }
 
@@ -2668,8 +2747,7 @@ void searchStudentScreen() {
     cin >> id;
 
     if (id == "0") {
-        cout << "Cancelled." << endl;
-        pauseScreen();
+        
         return;
     }
 
@@ -2688,7 +2766,7 @@ void searchStudentScreen() {
         cout << "\nStudent ID not found." << endl;
     }
 
-    pauseScreen();
+    pauseScreen();  
 }
 
 void generateAdminReportScreen() {
