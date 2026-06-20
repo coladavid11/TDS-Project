@@ -9,4 +9,3 @@ S008|Lim Kitchener|020405089975|lim@email.com|kitchener1|0182221100|IT|March2024
 S009|Muhammad Rizwan|010909146673|rizwan@email.com|rizPC|0123334455|CS|September2023
 S015|Stephanie Wong|021230104452|steph@email.com|wong999|0157778899|SE|September2023
 S016|LIU JIUN LE|060203010343|LIU.JIUN.LE@student.mmu.edu.my|abc123|01123366716|IT|September2026
-S017|David|050203010343|lejiun123|abc123|01123366716|SB|September2026
