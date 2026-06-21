@@ -1256,16 +1256,20 @@ void showMainMenu() {
 }
 
 // Helper 1: Manually validate email format (No STL)
-bool isValidEmailFormat(string email) {
+bool isValidEmailFormat(string email) 
+{
     int atIndex = -1;
     int dotIndex = -1;
     int atCount = 0;
 
-    for (int i = 0; i < email.length(); i++) {
-        if (email[i] == '@') {
+    for (int i = 0; i < email.length(); i++) 
+    {
+        if (email[i] == '@') 
+        {
             atIndex = i;
             atCount++;
-        } else if (email[i] == '.' && atIndex != -1) {
+        } else if (email[i] == '.' && atIndex != -1) 
+    {
             // Record the position of the last '.' that appears after the '@'
             dotIndex = i; 
         }
@@ -1287,11 +1291,14 @@ bool isValidEmailFormat(string email) {
 }
 
 // Helper 2: Check if the email is already registered in the system
-bool isEmailDuplicate(string email) {
+bool isEmailDuplicate(string email) 
+{
     // Iterate through the currently loaded studentArray in memory
-    for (int i = 0; i < studentCount; i++) {
+    for (int i = 0; i < studentCount; i++) 
+    {
         // Note: Ensure getEmail() matches the actual getter method in your Person/Student class
-        if (studentArray[i]->getEmail() == email) {
+        if (studentArray[i]->getEmail() == email) 
+        {
             return true; // Duplicate found
         }
     }
@@ -1301,29 +1308,35 @@ bool isEmailDuplicate(string email) {
 // =====================================================================
 // SCREEN 1 - STUDENT REGISTRATION (real logic, with IC/phone validation)
 // =====================================================================
-void studentRegistrationScreen() {
+void studentRegistrationScreen() 
+{
     clearScreen();
     cout << "========= STUDENT REGISTRATION =========" << endl;
 
-    try {
+    try 
+    {
         string name, ic, email, password, phone, program;
 
         cout << "Enter Name (0 to cancel): ";
         cin.ignore();
         getline(cin, name);
 
-        if (name == "0") {
+        if (name == "0") 
+        {
             return;
         }   
 
         int icAttempts = 0;
-        do {
+        do
+        {
             cout << "Enter IC Number (must be exactly 12 digits): ";
             cin >> ic;
             icAttempts++;
-            if (!isValidIC(ic)) {
+            if (!isValidIC(ic)) 
+            {
                 cout << "Invalid IC number. It must contain exactly 12 digits." << endl;
-                if (icAttempts >= 5) {
+                if (icAttempts >= 5) 
+                {
                     throw runtime_error("Too many invalid IC attempts. Registration cancelled.");
                 }
             }
@@ -1334,22 +1347,30 @@ void studentRegistrationScreen() {
         // ==========================================
         int emailAttempts = 0;
         bool validEmailFound = false;
-        do {
+        do 
+        {
             cout << "Enter Email: ";
             cin >> email;
             emailAttempts++;
 
-            if (!isValidEmailFormat(email)) {
+            if (!isValidEmailFormat(email)) 
+            {
                 cout << "Invalid email format. Must contain '@' and a domain (e.g., user@email.com)." << endl;
-                if (emailAttempts >= 5) {
+                if (emailAttempts >= 5) 
+                {
                     throw runtime_error("Too many invalid email format attempts. Registration cancelled.");
                 }
-            } else if (isEmailDuplicate(email)) {
+            } 
+            else if (isEmailDuplicate(email)) 
+            {
                 cout << "Email is already registered! Please use a different email." << endl;
-                if (emailAttempts >= 5) {
+                if (emailAttempts >= 5) 
+                {
                     throw runtime_error("Too many duplicate email attempts. Registration cancelled.");
                 }
-            } else {
+            } 
+            else 
+            {
                 validEmailFound = true; // Format is valid and no duplicates found
             }
         } while (!validEmailFound);
@@ -1361,17 +1382,21 @@ void studentRegistrationScreen() {
         cin >> password;
 
         int phoneAttempts = 0;
-        do {
+        do 
+        {
             cout << "Enter Phone Number (numeric, below 12 digits): ";
             cin >> phone;
             phoneAttempts++;
-            if (!isValidPhone(phone)) {
+            if (!isValidPhone(phone)) 
+            {
                 cout << "Invalid phone number. Must be numeric and below 12 digits." << endl;
-                if (phoneAttempts >= 5) {
+                if (phoneAttempts >= 5) 
+                {
                     throw runtime_error("Too many invalid phone attempts. Registration cancelled.");
                 }
             }
-        } while (!isValidPhone(phone));
+        } 
+        while (!isValidPhone(phone));
 
         cout << "Enter Program (CS/IT/SE): ";
         cin >> program;
@@ -1387,7 +1412,8 @@ void studentRegistrationScreen() {
         cout << "Registration successful! Your Student ID is: " << newID << endl;
         cout << "=========================================" << endl;
     }
-    catch (runtime_error &e) {
+    catch (runtime_error &e) 
+    {
         cout << "=========================================" << endl;
         cout << "Registration failed: " << e.what() << endl;
         cout << "=========================================" << endl;
