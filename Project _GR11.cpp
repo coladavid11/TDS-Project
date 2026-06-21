@@ -2114,8 +2114,26 @@ void addStudentScreen() {
             }
         } while (!isValidIC(ic));
 
-        cout << "Enter Email: ";
-        cin >> email;
+        int emailAttempts = 0;
+		do {
+		    cout << "Enter Email (or 0 to cancel): ";
+		    cin >> email;
+		
+		    if (email == "0") {
+		        return;
+		    }
+		
+		    emailAttempts++;
+		
+		    if (!isValidEmail(email)) {
+		        cout << "Invalid email format." << endl;
+		
+		        if (emailAttempts >= 5) {
+		            throw runtime_error("Too many invalid email attempts. Operation cancelled.");
+		        }
+		    }
+		
+		} while (!isValidEmail(email));
 
         cout << "Enter Password: ";
         cin >> password;
@@ -2450,43 +2468,46 @@ void editCourseScreen() {
         pauseScreen();
         return;
     }
-
-    cout << "\nCurrent details: " << courseArray[idx].code << " - " << courseArray[idx].name
-         << " (" << courseArray[idx].credit << " credit(s))" << endl;
-
-    cout << "1. Edit Course Name" << endl;
-    cout << "2. Edit Credit Hours" << endl;
-    cout << "3. Edit Department" << endl;
-    cout << "0. Back (cancel edit)" << endl;
-    cout << "Enter your choice: ";
-    int choice = readIntInput();
-
-    switch (choice) {
-        case 1:
-            cout << "Enter new Course Name: ";
-            cin.ignore();
-            getline(cin, courseArray[idx].name);
-            break;
-        case 2:
-            cout << "Enter new Credit Hours: ";
-            courseArray[idx].credit = readIntInput();
-            break;
-        case 3:
-            cout << "Enter new Department: ";
-            cin >> courseArray[idx].department;
-            break;
-        case 0:
-            
-            return;
-        default:
-            cout << "Invalid choice." << endl;
-            pauseScreen();
-            return;
+    
+    while(true)
+    {	
+	    cout << "\nCurrent details: " << courseArray[idx].code << " - " << courseArray[idx].name
+	         << " (" << courseArray[idx].credit << " credit(s))" << endl;
+	
+	    cout << "1. Edit Course Name" << endl;
+	    cout << "2. Edit Credit Hours" << endl;
+	    cout << "3. Edit Department" << endl;
+	    cout << "0. Back (cancel edit)" << endl;
+	    cout << "Enter your choice: ";
+	    int choice = readIntInput();
+	
+	    switch (choice) {
+	        case 1:
+	            cout << "Enter new Course Name: ";
+	            cin.ignore();
+	            getline(cin, courseArray[idx].name);
+	            break;
+	        case 2:
+	            cout << "Enter new Credit Hours: ";
+	            courseArray[idx].credit = readIntInput();
+	            break;
+	        case 3:
+	            cout << "Enter new Department: ";
+	            cin >> courseArray[idx].department;
+	            break;
+	        case 0:
+	            
+	            return;
+	        default:
+	            cout << "Invalid choice." << endl;
+	            pauseScreen();
+	            return;
+	    }
+	
+	    rewriteCoursesFile();
+	    cout << "Course updated successfully." << endl;
+	    pauseScreen();
     }
-
-    rewriteCoursesFile();
-    cout << "Course updated successfully." << endl;
-    pauseScreen();
 }
 
 void deleteCourseScreen() {
@@ -2594,70 +2615,73 @@ void viewGradesForStudentScreen() {
 }
 
 void assignGradeScreen() {
-    clearScreen();
-    cout << "===== ASSIGN/UPDATE GRADE =====" << endl;
-
-    if (studentCount == 0) {
-        cout << "No student records found." << endl;
-        pauseScreen();
-        return;
-    }
-
-    cout << "Enter Student ID (or 0 to cancel): ";
-    string id;
-    cin >> id;
-
-    if (id == "0") {
-        
-        return;
-    }
-
-    int idx = findStudentIndexByID(id);
-    if (idx == -1) {
-        cout << "Student ID not found." << endl;
-        pauseScreen();
-        return;
-    }
-
-    studentArray[idx]->getGradeList()->displayAll();
-
-    cout << "\nEnter Course Code to assign/update a grade for (or 0 to cancel): ";
-    string code;
-    cin >> code;
-
-    if (code == "0") {
-        
-        return;
-    }
-
-    cout << "Enter Grade (e.g. A, A-, B+, F, or 0 to cancel): ";
-    string grade;
-    cin >> grade;
-
-    if (grade == "0") {
-        
-        return;
-    }
-
-    bool updated = studentArray[idx]->getGradeList()->updateGradeByCourse(code, grade);
-
-    if (!updated) {
-        // Course isn't on this student's record yet - look it up in the
-        // catalog and add it directly with the given grade.
-        int courseIdx = findCourseIndexByCode(code);
-        if (courseIdx == -1) {
-            cout << "Course code not found in catalog and student has no record for it." << endl;
-            pauseScreen();
-            return;
-        }
-        GradeEntry newEntry(id, courseArray[courseIdx].code, courseArray[courseIdx].name,
-                             courseArray[courseIdx].credit, grade, "Sem2-2026");
-        studentArray[idx]->getGradeList()->insert(newEntry);
-    }
-
-    rewriteGradesFile();
-    cout << "Grade assigned/updated successfully." << endl;
-    pauseScreen();
+	clearScreen();
+	    cout << "===== ASSIGN/UPDATE GRADE =====" << endl;
+	    
+	    if (studentCount == 0) {
+	        cout << "No student records found." << endl;
+	        pauseScreen();
+	        return;
+	    }
+	    cout << "Enter Student ID (or 0 to cancel): ";
+	    string id;
+	    cin >> id;
+	
+	    if (id == "0") {
+	        
+	        return;
+	    }
+	
+	    int idx = findStudentIndexByID(id);
+	    if (idx == -1) {
+	        cout << "Student ID not found." << endl;
+	        pauseScreen();
+	        return;
+	    }
+	
+	    studentArray[idx]->getGradeList()->displayAll();
+	while(true)
+	{		
+	    cout << "\nEnter Course Code to assign/update a grade for (or 0 to cancel): ";
+	    string code;
+	    cin >> code;
+	
+	    if (code == "0") {
+	        
+	        return;
+	    }
+	
+	    cout << "Enter Grade (e.g. A, A-, B+, F, or 0 to cancel): ";
+	    string grade;
+	    cin >> grade;
+	
+	    if (grade == "0") {
+	        
+	        return;
+	    }
+	
+	    bool updated = studentArray[idx]->getGradeList()->updateGradeByCourse(code, grade);
+	
+	    if (!updated) {
+	        // Course isn't on this student's record yet - look it up in the
+	        // catalog and add it directly with the given grade.
+	        int courseIdx = findCourseIndexByCode(code);
+	        if (courseIdx == -1) {
+	            cout << "Course code not found in catalog and student has no record for it." << endl;
+	            pauseScreen();
+	            return;
+	        }
+	        GradeEntry newEntry(id, courseArray[courseIdx].code, courseArray[courseIdx].name,
+	                             courseArray[courseIdx].credit, grade, "Sem2-2026");
+	        studentArray[idx]->getGradeList()->insert(newEntry);
+	    }
+	
+	    rewriteGradesFile();
+	    cout << "Grade assigned/updated successfully." << endl;
+	    pauseScreen();
+	    
+	    studentArray[idx]->getGradeList()->displayAll();
+	}
 }
 
 void approveEnrollmentScreen() {
