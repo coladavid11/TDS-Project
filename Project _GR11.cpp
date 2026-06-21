@@ -44,8 +44,10 @@ void pauseScreen() {
 // letting the program spin into a broken infinite loop.
 int readIntInput() {
     int value;
-    while (!(cin >> value)) {
-        if (cin.eof()) {
+    while (!(cin >> value)) 
+	{
+        if (cin.eof()) 
+		{
             cout << "\nInput stream ended unexpectedly. Closing program." << endl;
             exit(0);
         }
@@ -59,7 +61,8 @@ int readIntInput() {
 // Splits "line" on "delimiter" into "result[]" (max maxFields). Returns
 // the number of fields actually found. Used by every .txt file loader
 // instead of any STL parsing function.
-int splitLine(string line, string result[], int maxFields, char delimiter) {
+int splitLine(string line, string result[], int maxFields, char delimiter) 
+{
     int fieldIndex = 0;
     string current = "";
     for (int i = 0; i < (int)line.length(); i++) 
@@ -2854,32 +2857,24 @@ void sortStudentsScreen() {
     }
 
     cout << "\n----- Sorted Results -----" << endl;
-    cout << left
-         << setw(8)  << "ID"
-         << setw(20) << "Name"
-         << setw(10) << "Program"
-         << setw(10) << "GPA"
-         << endl;
+    cout << left << setw(8)  << "ID" << setw(20) << "Name" << setw(10) << "Program" << setw(10) << "GPA" << endl;
     cout << "------------------------------------------------" << endl;
 
     cout << fixed << setprecision(2);
-    for (int i = 0; i < studentCount; i++) {
-        cout << left
-             << setw(8)  << sortedArr[i]->getID()
-             << setw(20) << sortedArr[i]->getName()
-             << setw(10) << sortedArr[i]->getProgram()
-             << setw(10) << calculateStudentGPA(sortedArr[i])
-             << endl;
+    for (int i = 0; i < studentCount; i++) 
+	{
+        cout << left << setw(8)  << sortedArr[i]->getID() << setw(20) << sortedArr[i]->getName() << setw(10) << sortedArr[i]->getProgram() << setw(10) << calculateStudentGPA(sortedArr[i]) << endl;
     }
-
     pauseScreen();
 }
 
-void searchStudentScreen() {
+void searchStudentScreen() 
+{
     clearScreen();
     cout << "========= SEARCH STUDENT RECORD =========" << endl;
 
-    if (studentCount == 0) {
+    if (studentCount == 0) 
+	{
         cout << "No student records found." << endl;
         pauseScreen();
         return;
@@ -2889,8 +2884,8 @@ void searchStudentScreen() {
     string id;
     cin >> id;
 
-    if (id == "0") {
-        
+    if (id == "0") 
+	{
         return;
     }
 
@@ -2900,30 +2895,35 @@ void searchStudentScreen() {
 
     int result = binarySearch(sortedArr, studentCount, id);
 
-    if (result != -1) {
+    if (result != -1) 
+	{
         cout << "\nStudent Found:" << endl;
         sortedArr[result]->displayProfile();
-        cout << "Cumulative GPA: " << fixed << setprecision(2)
-             << calculateStudentGPA(sortedArr[result]) << endl;
-    } else {
+        cout << "Cumulative GPA: " << fixed << setprecision(2) << calculateStudentGPA(sortedArr[result]) << endl;
+    } 
+	else 
+	{
         cout << "\nStudent ID not found." << endl;
     }
 
     pauseScreen();  
 }
 
-void generateAdminReportScreen() {
+void generateAdminReportScreen() 
+{
     clearScreen();
     cout << "===== GENERATE DEPARTMENT REPORT =====" << endl;
 
-    if (studentCount == 0) {
+    if (studentCount == 0) 
+	{
         cout << "No student records found. Cannot generate report." << endl;
         pauseScreen();
         return;
     }
 
     ofstream outFile("admin_report.txt");
-    if (!outFile) {
+    if (!outFile) 
+	{
         cout << "Error: could not open admin_report.txt for writing." << endl;
         pauseScreen();
         return;
@@ -2934,7 +2934,8 @@ void generateAdminReportScreen() {
     outFile << "============================================================" << endl;
 
     double totalGPA = 0.0;
-    for (int i = 0; i < studentCount; i++) {
+    for (int i = 0; i < studentCount; i++) 
+	{
         totalGPA += calculateStudentGPA(studentArray[i]);
     }
     double overallAverage = totalGPA / studentCount;
@@ -2948,13 +2949,16 @@ void generateAdminReportScreen() {
     // Average GPA per program (manual grouping - no STL map/set)
     string programs[MAX_STUDENTS];
     int programCount = 0;
-    for (int i = 0; i < studentCount; i++) {
+    for (int i = 0; i < studentCount; i++) 
+	{
         string prog = studentArray[i]->getProgram();
         bool found = false;
-        for (int j = 0; j < programCount; j++) {
+        for (int j = 0; j < programCount; j++) 
+		{
             if (programs[j] == prog) { found = true; break; }
         }
-        if (!found) {
+        if (!found) 
+		{
             programs[programCount] = prog;
             programCount++;
         }
@@ -2962,19 +2966,20 @@ void generateAdminReportScreen() {
 
     outFile << "\nAverage GPA by Program:" << endl;
     outFile << "------------------------------------------------------------" << endl;
-    for (int p = 0; p < programCount; p++) {
+    for (int p = 0; p < programCount; p++) 
+	{
         double sum = 0.0;
         int count = 0;
-        for (int i = 0; i < studentCount; i++) {
-            if (studentArray[i]->getProgram() == programs[p]) {
+        for (int i = 0; i < studentCount; i++) 
+		{
+            if (studentArray[i]->getProgram() == programs[p]) 
+			{
                 sum += calculateStudentGPA(studentArray[i]);
                 count++;
             }
         }
         double avg = (count > 0) ? (sum / count) : 0.0;
-        outFile << left << setw(10) << programs[p]
-                << "Students: " << setw(5) << count
-                << "Avg GPA: " << avg << endl;
+        outFile << left << setw(10) << programs[p] << "Students: " << setw(5) << count << "Avg GPA: " << avg << endl;
     }
 
     // Top students by GPA (capped at 5, or fewer if the cohort is smaller)
@@ -2987,13 +2992,9 @@ void generateAdminReportScreen() {
     outFile << left << setw(8) << "ID" << setw(20) << "Name" << setw(10) << "Program" << setw(8) << "GPA" << endl;
 
     int topN = (studentCount < 5) ? studentCount : 5;
-    for (int i = 0; i < topN; i++) {
-        outFile << left
-                << setw(8)  << sortedArr[i]->getID()
-                << setw(20) << sortedArr[i]->getName()
-                << setw(10) << sortedArr[i]->getProgram()
-                << setw(8)  << calculateStudentGPA(sortedArr[i])
-                << endl;
+    for (int i = 0; i < topN; i++) 
+	{
+        outFile << left << setw(8)  << sortedArr[i]->getID() << setw(20) << sortedArr[i]->getName() << setw(10) << sortedArr[i]->getProgram() << setw(8)  << calculateStudentGPA(sortedArr[i]) << endl;
     }
 
     outFile << "============================================================" << endl;
@@ -3003,19 +3004,22 @@ void generateAdminReportScreen() {
     pauseScreen();
 }
 
-void viewAdminReportScreen() {
+void viewAdminReportScreen() 
+{
     clearScreen();
     cout << "========= VIEW SAVED REPORT =========" << endl;
 
     ifstream inFile("admin_report.txt");
-    if (!inFile) {
+    if (!inFile) 
+	{
         cout << "No saved report found. Please generate a report first." << endl;
         pauseScreen();
         return;
     }
 
     string line;
-    while (getline(inFile, line)) {
+    while (getline(inFile, line)) 
+	{
         cout << line << endl;
     }
     inFile.close();
