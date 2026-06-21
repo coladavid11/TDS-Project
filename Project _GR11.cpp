@@ -386,7 +386,8 @@ void exportRecordToFile(AcademicRecord &rec, ofstream &outFile)
 // =====================================================================
 // DERIVED CLASS 1: GradeEntry (inherits AcademicRecord)
 // =====================================================================
-class GradeEntry : public AcademicRecord {
+class GradeEntry : public AcademicRecord 
+{
 private:
     string studentID;
     string grade;
@@ -405,7 +406,8 @@ public:
     friend void printGradeDetails(GradeEntry &g); // friend #3
 };
 
-GradeEntry::GradeEntry() : AcademicRecord() {
+GradeEntry::GradeEntry() : AcademicRecord() 
+{
     studentID = "";
     grade = "";
     term.semester = "";
@@ -413,7 +415,8 @@ GradeEntry::GradeEntry() : AcademicRecord() {
 }
 
 GradeEntry::GradeEntry(string sid, string code, string name, int credit, string grade, string semester)
-    : AcademicRecord(code, name, credit) {
+    : AcademicRecord(code, name, credit) 
+{
     studentID = sid;
     this->grade = grade;
     term.semester = semester;
@@ -436,12 +439,14 @@ void printGradeDetails(GradeEntry &g) {
 // =====================================================================
 // DYNAMIC NON-PRIMITIVE STRUCTURE: Singly Linked List of GradeEntry
 // =====================================================================
-struct GradeNode {
+struct GradeNode 
+{
     GradeEntry data;
     GradeNode* next;
 };
 
-class GradeLinkedList {
+class GradeLinkedList 
+{
 private:
     GradeNode* head;
     int count;
@@ -460,12 +465,14 @@ public:
     friend int countGradeNodes(GradeLinkedList &list); // friend #4
 };
 
-GradeLinkedList::GradeLinkedList() {
+GradeLinkedList::GradeLinkedList() 
+{
     head = nullptr;
     count = 0;
 }
 
-GradeLinkedList::~GradeLinkedList() {
+GradeLinkedList::~GradeLinkedList() 
+{
     GradeNode* current = head;
     while (current != nullptr) {
         GradeNode* temp = current;
@@ -475,16 +482,21 @@ GradeLinkedList::~GradeLinkedList() {
     head = nullptr;
 }
 
-void GradeLinkedList::insert(GradeEntry e) {
+void GradeLinkedList::insert(GradeEntry e) 
+{
     GradeNode* newNode = new GradeNode; // dynamic memory operation: new
     newNode->data = e;
     newNode->next = nullptr;
 
     if (head == nullptr) {
+    	
         head = newNode;
-    } else {
+    } 
+	else 
+	{
         GradeNode* current = head;
-        while (current->next != nullptr) {
+        while (current->next != nullptr) 
+		{
             current = current->next;
         }
         current->next = newNode;
@@ -492,10 +504,12 @@ void GradeLinkedList::insert(GradeEntry e) {
     count++;
 }
 
-bool GradeLinkedList::removeByCourse(string code) {
+bool GradeLinkedList::removeByCourse(string code) 
+{
     if (head == nullptr) return false;
 
-    if (head->data.getCourseCode() == code) {
+    if (head->data.getCourseCode() == code)
+	{
         GradeNode* temp = head;
         head = head->next;
         delete temp;
@@ -504,8 +518,10 @@ bool GradeLinkedList::removeByCourse(string code) {
     }
 
     GradeNode* current = head;
-    while (current->next != nullptr) {
-        if (current->next->data.getCourseCode() == code) {
+    while (current->next != nullptr) 
+	{
+        if (current->next->data.getCourseCode() == code) 
+		{
             GradeNode* temp = current->next;
             current->next = current->next->next;
             delete temp;
@@ -517,10 +533,13 @@ bool GradeLinkedList::removeByCourse(string code) {
     return false;
 }
 
-bool GradeLinkedList::updateGradeByCourse(string code, string newGrade) {
+bool GradeLinkedList::updateGradeByCourse(string code, string newGrade) 
+{
     GradeNode* current = head;
-    while (current != nullptr) {
-        if (current->data.getCourseCode() == code) {
+    while (current != nullptr) 
+	{
+        if (current->data.getCourseCode() == code) 
+		{
             current->data.setGrade(newGrade);
             return true;
         }
@@ -529,13 +548,16 @@ bool GradeLinkedList::updateGradeByCourse(string code, string newGrade) {
     return false;
 }
 
-void GradeLinkedList::displayAll() {
-    if (head == nullptr) {
+void GradeLinkedList::displayAll() 
+{
+    if (head == nullptr) 
+	{
         cout << "No grade records found." << endl;
         return;
     }
     GradeNode* current = head;
-    while (current != nullptr) {
+    while (current != nullptr) 
+	{
         printGradeDetails(current->data);
         current = current->next;
     }
@@ -544,24 +566,28 @@ void GradeLinkedList::displayAll() {
 bool GradeLinkedList::isEmpty() const { return head == nullptr; }
 int GradeLinkedList::getCount() const { return count; }
 
-void GradeLinkedList::toArray(GradeEntry arr[], int &outCount) {
+void GradeLinkedList::toArray(GradeEntry arr[], int &outCount) 
+{
     outCount = 0;
     GradeNode* current = head;
-    while (current != nullptr && outCount < MAX_TEMP_GRADES) {
+    while (current != nullptr && outCount < MAX_TEMP_GRADES) 
+	{
         arr[outCount] = current->data;
         outCount++;
         current = current->next;
     }
 }
 
-int countGradeNodes(GradeLinkedList &list) {
+int countGradeNodes(GradeLinkedList &list) 
+{
     return list.count;
 }
 
 // =====================================================================
 // DERIVED CLASS 2: Student (inherits Person)
 // =====================================================================
-class Student : public Person {
+class Student : public Person 
+{
 private:
     string ic;
     string program;
@@ -583,7 +609,8 @@ public:
     void setProgram(string p);
 };
 
-Student::Student() : Person() {
+Student::Student() : Person() 
+{
     ic = "";
     program = "";
     intake = "";
@@ -592,23 +619,27 @@ Student::Student() : Person() {
 
 Student::Student(string id, string name, string password, string ic, string phone,
                   string email, string program, string intake)
-    : Person(id, name, password, phone, email) {
+    : Person(id, name, password, phone, email) 
+	{
     this->ic = ic;
     this->program = program;
     this->intake = intake;
     gradeList = new GradeLinkedList(); // dynamic memory operation #1
 }
 
-Student::~Student() {
+Student::~Student() 
+{
     delete gradeList; // dynamic memory operation #2
     gradeList = nullptr;
 }
 
-bool Student::login(string inputID, string inputPassword) {
+bool Student::login(string inputID, string inputPassword) 
+{
     return (getID() == inputID) && validatePassword(*this, inputPassword);
 }
 
-void Student::displayProfile() {
+void Student::displayProfile() 
+{
     cout << "-----------------------------------" << endl;
     cout << "Student ID : " << getID() << endl;
     cout << "Name       : " << getName() << endl;
@@ -629,7 +660,8 @@ void Student::setProgram(string p)       { program = p; }
 // =====================================================================
 // DERIVED CLASS 3: Staff (inherits Person)
 // =====================================================================
-class Staff : public Person {
+class Staff : public Person 
+{
 private:
     string role;
     string department;
@@ -649,28 +681,33 @@ public:
     friend void printStaffDetails(Staff &s); // additional friend function
 };
 
-Staff::Staff() : Person() {
+Staff::Staff() : Person() 
+{
     role = "";
     department = "";
     position = "";
 }
 
 Staff::Staff(string id, string name, string password, string role, string department, string position)
-    : Person(id, name, password, "", "") {
+    : Person(id, name, password, "", "") 
+	{
     this->role = role;
     this->department = department;
     this->position = position;
-}
+	}
 
-Staff::~Staff() {
+Staff::~Staff() 
+{
     // nothing dynamic owned by Staff - no cleanup needed
 }
 
-bool Staff::login(string inputID, string inputPassword) {
+bool Staff::login(string inputID, string inputPassword) 
+{
     return (getID() == inputID) && validatePassword(*this, inputPassword);
 }
 
-void Staff::displayProfile() {
+void Staff::displayProfile() 
+{
     cout << "-----------------------------------" << endl;
     cout << "Staff ID   : " << getID() << endl;
     cout << "Name       : " << getName() << endl;
@@ -684,7 +721,8 @@ string Staff::getRole() const       { return role; }
 string Staff::getDepartment() const { return department; }
 string Staff::getPosition() const   { return position; }
 
-void printStaffDetails(Staff &s) {
+void printStaffDetails(Staff &s) 
+{
     cout << left << setw(10) << s.id << setw(20) << s.name << setw(12) << s.role << setw(18) << s.department << setw(18) << s.position << endl;
 }
 
@@ -703,7 +741,8 @@ int staffCount = 0;
 // Computes a student's cumulative GPA on a 4.0 scale from their grade
 // list, excluding "Pending" entries. Shared by the sort, search, and
 // report features so the calculation only lives in one place.
-double calculateStudentGPA(Student* s) {
+double calculateStudentGPA(Student* s) 
+{
     GradeEntry tempArr[MAX_TEMP_GRADES];
     int n = 0;
     s->getGradeList()->toArray(tempArr, n);
@@ -711,9 +750,11 @@ double calculateStudentGPA(Student* s) {
     double totalPoints = 0.0;
     int totalCredits = 0;
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) 
+	{
         double gpaPoint = gradeToGPA(tempArr[i].getGrade());
-        if (gpaPoint >= 0.0) {
+        if (gpaPoint >= 0.0) 
+		{
             totalPoints += gpaPoint * tempArr[i].getCredit();
             totalCredits += tempArr[i].getCredit();
         }
@@ -726,11 +767,14 @@ double calculateStudentGPA(Student* s) {
 // SORTING ALGORITHM: Quick Sort (manually implemented)
 // Overloaded for GradeEntry[] (3 keys) and for Course[] (by code)
 // =====================================================================
-int partitionByGrade(GradeEntry arr[], int low, int high) {
+int partitionByGrade(GradeEntry arr[], int low, int high) 
+{
     double pivot = gradeToGPA(arr[high].getGrade());
     int i = low - 1;
-    for (int j = low; j < high; j++) {
-        if (gradeToGPA(arr[j].getGrade()) >= pivot) { // descending: best grade first
+    for (int j = low; j < high; j++) 
+	{
+        if (gradeToGPA(arr[j].getGrade()) >= pivot) 
+		{ // descending: best grade first
             i++;
             GradeEntry temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
         }
@@ -739,11 +783,14 @@ int partitionByGrade(GradeEntry arr[], int low, int high) {
     return i + 1;
 }
 
-int partitionBySemester(GradeEntry arr[], int low, int high) {
+int partitionBySemester(GradeEntry arr[], int low, int high) 
+{
     int pivot = arr[high].getTerm().sortKey;
     int i = low - 1;
-    for (int j = low; j < high; j++) {
-        if (arr[j].getTerm().sortKey <= pivot) { // ascending: oldest semester first
+    for (int j = low; j < high; j++) 
+	{
+        if (arr[j].getTerm().sortKey <= pivot) 
+		{ // ascending: oldest semester first
             i++;
             GradeEntry temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
         }
@@ -752,11 +799,14 @@ int partitionBySemester(GradeEntry arr[], int low, int high) {
     return i + 1;
 }
 
-int partitionByCode(GradeEntry arr[], int low, int high) {
+int partitionByCode(GradeEntry arr[], int low, int high) 
+{
     string pivot = arr[high].getCourseCode();
     int i = low - 1;
-    for (int j = low; j < high; j++) {
-        if (arr[j].getCourseCode() <= pivot) { // ascending alphabetical
+    for (int j = low; j < high; j++) 
+	{
+        if (arr[j].getCourseCode() <= pivot) 
+		{ // ascending alphabetical
             i++;
             GradeEntry temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
         }
@@ -766,14 +816,21 @@ int partitionByCode(GradeEntry arr[], int low, int high) {
 }
 
 // sortKey accepts "GRADE", "SEMESTER", or "CODE"
-void quickSort(GradeEntry arr[], int low, int high, string sortKey) {
-    if (low < high) {
+void quickSort(GradeEntry arr[], int low, int high, string sortKey) 
+{
+    if (low < high) 
+	{
         int pi;
-        if (sortKey == "GRADE") {
+        if (sortKey == "GRADE") 
+		{
             pi = partitionByGrade(arr, low, high);
-        } else if (sortKey == "SEMESTER") {
+        } 
+		else if (sortKey == "SEMESTER") 
+		{
             pi = partitionBySemester(arr, low, high);
-        } else {
+        } 
+		else 
+		{
             pi = partitionByCode(arr, low, high);
         }
         quickSort(arr, low, pi - 1, sortKey);
@@ -783,12 +840,16 @@ void quickSort(GradeEntry arr[], int low, int high, string sortKey) {
 
 // Overload: sorts a Course[] array by course code (used before searching
 // the course catalog with binary search).
-void quickSort(Course arr[], int low, int high) {
-    if (low < high) {
+void quickSort(Course arr[], int low, int high) 
+{
+    if (low < high) 
+	{
         string pivot = arr[high].code;
         int i = low - 1;
-        for (int j = low; j < high; j++) {
-            if (arr[j].code <= pivot) {
+        for (int j = low; j < high; j++) 
+		{
+            if (arr[j].code <= pivot) 
+			{
                 i++;
                 Course temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
             }
@@ -800,11 +861,14 @@ void quickSort(Course arr[], int low, int high) {
     }
 }
 
-int partitionStudentsByGPA(Student* arr[], int low, int high) {
+int partitionStudentsByGPA(Student* arr[], int low, int high) 
+{
     double pivot = calculateStudentGPA(arr[high]);
     int i = low - 1;
-    for (int j = low; j < high; j++) {
-        if (calculateStudentGPA(arr[j]) >= pivot) { // descending: highest GPA first
+    for (int j = low; j < high; j++) 
+	{
+        if (calculateStudentGPA(arr[j]) >= pivot) 
+		{ // descending: highest GPA first
             i++;
             Student* temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
         }
@@ -813,11 +877,14 @@ int partitionStudentsByGPA(Student* arr[], int low, int high) {
     return i + 1;
 }
 
-int partitionStudentsByID(Student* arr[], int low, int high) {
+int partitionStudentsByID(Student* arr[], int low, int high) 
+{
     string pivot = arr[high]->getID();
     int i = low - 1;
-    for (int j = low; j < high; j++) {
-        if (arr[j]->getID() <= pivot) { // ascending
+    for (int j = low; j < high; j++) 
+	{
+        if (arr[j]->getID() <= pivot) 
+		{ // ascending
             i++;
             Student* temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
         }
@@ -827,12 +894,17 @@ int partitionStudentsByID(Student* arr[], int low, int high) {
 }
 
 // Overload: sorts a Student*[] array. sortKey accepts "GPA" or "ID".
-void quickSort(Student* arr[], int low, int high, string sortKey) {
-    if (low < high) {
+void quickSort(Student* arr[], int low, int high, string sortKey) 
+{
+    if (low < high) 
+	{
         int pi;
-        if (sortKey == "GPA") {
+        if (sortKey == "GPA") 
+		{
             pi = partitionStudentsByGPA(arr, low, high);
-        } else {
+        } 
+		else 
+		{
             pi = partitionStudentsByID(arr, low, high);
         }
         quickSort(arr, low, pi - 1, sortKey);
@@ -844,9 +916,11 @@ void quickSort(Student* arr[], int low, int high, string sortKey) {
 // SEARCHING ALGORITHM: Binary Search (manually implemented)
 // Overloaded for GradeEntry[] and Course[]
 // =====================================================================
-int binarySearch(GradeEntry arr[], int size, string targetCode) {
+int binarySearch(GradeEntry arr[], int size, string targetCode) 
+{
     int low = 0, high = size - 1;
-    while (low <= high) {
+    while (low <= high) 
+	{
         int mid = low + (high - low) / 2;
         if (arr[mid].getCourseCode() == targetCode) return mid;
         else if (arr[mid].getCourseCode() < targetCode) low = mid + 1;
@@ -855,9 +929,11 @@ int binarySearch(GradeEntry arr[], int size, string targetCode) {
     return -1;
 }
 
-int binarySearch(Course arr[], int size, string targetCode) {
+int binarySearch(Course arr[], int size, string targetCode) 
+{
     int low = 0, high = size - 1;
-    while (low <= high) {
+    while (low <= high) 
+	{
         int mid = low + (high - low) / 2;
         if (arr[mid].code == targetCode) return mid;
         else if (arr[mid].code < targetCode) low = mid + 1;
@@ -866,9 +942,11 @@ int binarySearch(Course arr[], int size, string targetCode) {
     return -1;
 }
 
-int binarySearch(Student* arr[], int size, string targetID) {
+int binarySearch(Student* arr[], int size, string targetID) 
+{
     int low = 0, high = size - 1;
-    while (low <= high) {
+    while (low <= high) 
+	{
         int mid = low + (high - low) / 2;
         if (arr[mid]->getID() == targetID) return mid;
         else if (arr[mid]->getID() < targetID) low = mid + 1;
@@ -880,30 +958,38 @@ int binarySearch(Student* arr[], int size, string targetID) {
 // =====================================================================
 // LOOKUP HELPERS (linear scans - utility only, NOT the graded search feature)
 // =====================================================================
-int findStudentIndexByID(string id) {
-    for (int i = 0; i < studentCount; i++) {
+int findStudentIndexByID(string id) 
+{
+    for (int i = 0; i < studentCount; i++) 
+	{
         if (studentArray[i]->getID() == id) return i;
     }
     return -1;
 }
 
-int findCourseIndexByCode(string code) {
-    for (int i = 0; i < courseCount; i++) {
+int findCourseIndexByCode(string code) 
+{
+    for (int i = 0; i < courseCount; i++) 
+	{
         if (courseArray[i].code == code) return i;
     }
     return -1;
 }
 
-int findStaffIndexByID(string id) {
-    for (int i = 0; i < staffCount; i++) {
+int findStaffIndexByID(string id) 
+{
+    for (int i = 0; i < staffCount; i++) 
+	{
         if (staffArray[i]->getID() == id) return i;
     }
     return -1;
 }
 
-string generateNextStudentID() {
+string generateNextStudentID() 
+{
     int maxNum = 0;
-    for (int i = 0; i < studentCount; i++) {
+    for (int i = 0; i < studentCount; i++) 
+	{
         string idPart = studentArray[i]->getID().substr(1); // strip leading 'S'
         int num = stringToInt(idPart);
         if (num > maxNum) maxNum = num;
@@ -914,15 +1000,18 @@ string generateNextStudentID() {
 // =====================================================================
 // FILE I/O - LOADING
 // =====================================================================
-void loadCoursesFromFile() {
+void loadCoursesFromFile() 
+{
     ifstream inFile("courses.txt");
-    if (!inFile) {
+    if (!inFile) 
+	{
         cout << "Warning: courses.txt not found. Starting with no courses." << endl;
         return;
     }
     courseCount = 0;
     string line;
-    while (getline(inFile, line) && courseCount < MAX_COURSES) {
+    while (getline(inFile, line) && courseCount < MAX_COURSES) 
+	{
         if (line.length() == 0) continue;
         string fields[5];
         splitLine(line, fields, 5, '|');
@@ -936,15 +1025,18 @@ void loadCoursesFromFile() {
     inFile.close();
 }
 
-void loadStudentsFromFile() {
+void loadStudentsFromFile() 
+{
     ifstream inFile("students.txt");
-    if (!inFile) {
+    if (!inFile) 
+	{
         cout << "Warning: students.txt not found. Starting with no students." << endl;
         return;
     }
     studentCount = 0;
     string line;
-    while (getline(inFile, line) && studentCount < MAX_STUDENTS) {
+    while (getline(inFile, line) && studentCount < MAX_STUDENTS) 
+	{
         if (line.length() == 0) continue;
         string fields[8];
         splitLine(line, fields, 8, '|');
@@ -957,20 +1049,24 @@ void loadStudentsFromFile() {
     inFile.close();
 }
 
-void loadGradesFromFile() {
+void loadGradesFromFile() 
+{
     ifstream inFile("grades.txt");
-    if (!inFile) {
+    if (!inFile) 
+	{
         cout << "Warning: grades.txt not found. Starting with no grade records." << endl;
         return;
     }
     string line;
-    while (getline(inFile, line)) {
+    while (getline(inFile, line)) 
+	{
         if (line.length() == 0) continue;
         string fields[6];
         splitLine(line, fields, 6, '|');
         // fields: 0 StudentID,1 CourseCode,2 CourseName,3 Credit,4 Grade,5 Semester
         int idx = findStudentIndexByID(fields[0]);
-        if (idx != -1) {
+        if (idx != -1) 
+		{
             GradeEntry entry(fields[0], fields[1], fields[2], stringToInt(fields[3]),
                               fields[4], fields[5]);
             studentArray[idx]->getGradeList()->insert(entry);
@@ -979,21 +1075,23 @@ void loadGradesFromFile() {
     inFile.close();
 }
 
-void loadStaffFromFile() {
+void loadStaffFromFile() 
+{
     ifstream inFile("staff.txt");
-    if (!inFile) {
+    if (!inFile) 
+	{
         cout << "Warning: staff.txt not found. Starting with no staff accounts." << endl;
         return;
     }
     staffCount = 0;
     string line;
-    while (getline(inFile, line) && staffCount < MAX_STAFF) {
+    while (getline(inFile, line) && staffCount < MAX_STAFF) 
+	{
         if (line.length() == 0) continue;
         string fields[6];
         splitLine(line, fields, 6, '|');
         // fields: 0 StaffID,1 Name,2 Role,3 Password,4 Department,5 Position
-        staffArray[staffCount] = new Staff(fields[0], fields[1], fields[3], fields[2],
-                                            fields[4], fields[5]);
+        staffArray[staffCount] = new Staff(fields[0], fields[1], fields[3], fields[2], fields[4], fields[5]);
         staffCount++;
     }
     inFile.close();
@@ -1002,19 +1100,23 @@ void loadStaffFromFile() {
 // =====================================================================
 // FILE I/O - SAVING
 // =====================================================================
-void appendStudentToFile(Student* s) {
+void appendStudentToFile(Student* s) 
+{
     // The existing students.txt may not end with a newline - check first,
     // otherwise the new record would be glued onto the end of the last line.
     bool needsLeadingNewline = false;
     ifstream checkFile("students.txt");
-    if (checkFile) {
+    if (checkFile) 
+	{
         checkFile.seekg(0, ios::end);
         long fileSize = (long)checkFile.tellg();
-        if (fileSize > 0) {
+        if (fileSize > 0) 
+		{
             checkFile.seekg(-1, ios::end);
             char lastChar = '\0';
             checkFile.get(lastChar);
-            if (lastChar != '\n') {
+            if (lastChar != '\n') 
+			{
                 needsLeadingNewline = true;
             }
         }
@@ -1022,64 +1124,72 @@ void appendStudentToFile(Student* s) {
     checkFile.close();
 
     ofstream outFile("students.txt", ios::app);
-    if (!outFile) {
+    if (!outFile) 
+	{
         cout << "Error: could not open students.txt for writing." << endl;
         return;
     }
-    if (needsLeadingNewline) {
+    if (needsLeadingNewline) 
+	{
         outFile << endl;
     }
     outFile << s->getID() << "|" << s->getName() << "|" << s->getIC() << "|" << s->getEmail() << "|" << s->getPassword() << "|" << s->getPhone() << "|" << s->getProgram() << "|" << s->getIntake() << endl;
     outFile.close();
 }
 
-void rewriteStudentsFile() {
+void rewriteStudentsFile() 
+{
     ofstream outFile("students.txt"); // default mode truncates/overwrites
-    if (!outFile) {
+    if (!outFile) 
+	{
         cout << "Error: could not open students.txt for writing." << endl;
         return;
     }
-    for (int i = 0; i < studentCount; i++) {
-        outFile << studentArray[i]->getID() << "|" << studentArray[i]->getName() << "|"
-                << studentArray[i]->getIC() << "|" << studentArray[i]->getEmail() << "|"
-                << studentArray[i]->getPassword() << "|" << studentArray[i]->getPhone() << "|"
-                << studentArray[i]->getProgram() << "|" << studentArray[i]->getIntake() << endl;
+    for (int i = 0; i < studentCount; i++) 
+	{
+        outFile << studentArray[i]->getID() << "|" << studentArray[i]->getName() << "|" << studentArray[i]->getIC() << "|" << studentArray[i]->getEmail() << "|" << studentArray[i]->getPassword() << "|" << studentArray[i]->getPhone() << "|" << studentArray[i]->getProgram() << "|" << studentArray[i]->getIntake() << endl;
     }
     outFile.close();
 }
 
-void rewriteGradesFile() {
+void rewriteGradesFile() 
+{
     ofstream outFile("grades.txt");
-    if (!outFile) {
+    if (!outFile) 
+	{
         cout << "Error: could not open grades.txt for writing." << endl;
         return;
     }
-    for (int i = 0; i < studentCount; i++) {
+    for (int i = 0; i < studentCount; i++) 
+	{
         GradeEntry tempArr[MAX_TEMP_GRADES];
         int n = 0;
         studentArray[i]->getGradeList()->toArray(tempArr, n);
-        for (int j = 0; j < n; j++) {
-            outFile << tempArr[j].getStudentID() << "|" << tempArr[j].getCourseCode() << "|"
-                    << tempArr[j].getCourseName() << "|" << tempArr[j].getCredit() << "|"
-                    << tempArr[j].getGrade() << "|" << tempArr[j].getTerm().semester << endl;
+        for (int j = 0; j < n; j++) 
+		{
+            outFile << tempArr[j].getStudentID() << "|" << tempArr[j].getCourseCode() << "|" << tempArr[j].getCourseName() << "|" << tempArr[j].getCredit() << "|"<< tempArr[j].getGrade() << "|" << tempArr[j].getTerm().semester << endl;
         }
     }
     outFile.close();
 }
 
-void appendCourseToFile(Course c) {
+void appendCourseToFile(Course c) 
+{
     // Same trailing-newline safety check used for students.txt - courses.txt
     // may not end with a newline either.
     bool needsLeadingNewline = false;
     ifstream checkFile("courses.txt");
-    if (checkFile) {
+    if (checkFile) 
+	{
         checkFile.seekg(0, ios::end);
         long fileSize = (long)checkFile.tellg();
-        if (fileSize > 0) {
+        if (fileSize > 0) 
+		{
             checkFile.seekg(-1, ios::end);
             char lastChar = '\0';
             checkFile.get(lastChar);
-            if (lastChar != '\n') {
+            if (lastChar != '\n') 
+			{
                 needsLeadingNewline = true;
             }
         }
@@ -1087,32 +1197,36 @@ void appendCourseToFile(Course c) {
     checkFile.close();
 
     ofstream outFile("courses.txt", ios::app);
-    if (!outFile) {
+    if (!outFile) 
+	{
         cout << "Error: could not open courses.txt for writing." << endl;
         return;
     }
-    if (needsLeadingNewline) {
+    if (needsLeadingNewline) 
+	{
         outFile << endl;
     }
     outFile << c.code << "|" << c.name << "|" << c.credit << "|" << c.year << "|" << c.department << endl;
     outFile.close();
 }
 
-void rewriteCoursesFile() {
+void rewriteCoursesFile() 
+{
     ofstream outFile("courses.txt");
-    if (!outFile) {
+    if (!outFile) 
+	{
         cout << "Error: could not open courses.txt for writing." << endl;
         return;
     }
-    for (int i = 0; i < courseCount; i++) {
-        outFile << courseArray[i].code << "|" << courseArray[i].name << "|"
-                << courseArray[i].credit << "|" << courseArray[i].year << "|"
-                << courseArray[i].department << endl;
+    for (int i = 0; i < courseCount; i++) 
+	{
+        outFile << courseArray[i].code << "|" << courseArray[i].name << "|" << courseArray[i].credit << "|" << courseArray[i].year << "|" << courseArray[i].department << endl;
     }
     outFile.close();
 }
 
-void generateStudentReport(Student* s) {
+void generateStudentReport(Student* s) 
+{
     GradeEntry tempArr[MAX_TEMP_GRADES];
     int n = 0;
     s->getGradeList()->toArray(tempArr, n);
@@ -1121,7 +1235,8 @@ void generateStudentReport(Student* s) {
     int totalCredits = 0;
 
     ofstream outFile("student_report.txt"); // overwrites every time
-    if (!outFile) {
+    if (!outFile) 
+	{
         cout << "Error: could not open student_report.txt for writing." << endl;
         return;
     }
