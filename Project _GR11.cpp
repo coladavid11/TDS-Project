@@ -62,9 +62,12 @@ int readIntInput() {
 int splitLine(string line, string result[], int maxFields, char delimiter) {
     int fieldIndex = 0;
     string current = "";
-    for (int i = 0; i < (int)line.length(); i++) {
-        if (line[i] == delimiter) {
-            if (fieldIndex < maxFields) {
+    for (int i = 0; i < (int)line.length(); i++) 
+	{
+        if (line[i] == delimiter) 
+		{
+            if (fieldIndex < maxFields) 
+			{
                 result[fieldIndex] = current;
                 fieldIndex++;
             }
@@ -73,7 +76,8 @@ int splitLine(string line, string result[], int maxFields, char delimiter) {
             current += line[i];
         }
     }
-    if (fieldIndex < maxFields) {
+    if (fieldIndex < maxFields) 
+	{
         result[fieldIndex] = current;
         fieldIndex++;
     }
@@ -81,16 +85,20 @@ int splitLine(string line, string result[], int maxFields, char delimiter) {
 }
 
 // Manual string -> int conversion (handles optional leading '-').
-int stringToInt(string s) {
+int stringToInt(string s) 
+{
     int result = 0;
     int sign = 1;
     int i = 0;
-    if ((int)s.length() > 0 && s[0] == '-') {
+    if ((int)s.length() > 0 && s[0] == '-') 
+	{
         sign = -1;
         i = 1;
     }
-    for (; i < (int)s.length(); i++) {
-        if (s[i] >= '0' && s[i] <= '9') {
+    for (; i < (int)s.length(); i++) 
+	{
+        if (s[i] >= '0' && s[i] <= '9') 
+		{
             result = result * 10 + (s[i] - '0');
         }
     }
@@ -98,29 +106,38 @@ int stringToInt(string s) {
 }
 
 // Pads an integer with leading zeros to a fixed width (e.g. 16 -> "016").
-string intToPaddedString(int num, int width) {
+string intToPaddedString(int num, int width) 
+{
     string result = "";
     int temp = num;
-    if (temp == 0) {
+    if (temp == 0) 
+	{
         result = "0";
-    } else {
-        while (temp > 0) {
+    } 
+	else 
+	{
+        while (temp > 0) 
+		{
             int digit = temp % 10;
             result = (char)('0' + digit) + result;
             temp /= 10;
         }
     }
-    while ((int)result.length() < width) {
+    while ((int)result.length() < width) 
+	{
         result = "0" + result;
     }
     return result;
 }
 
 // Returns true only if every character in s is a digit (and s isn't empty).
-bool isAllDigits(string s) {
+bool isAllDigits(string s) 
+{
     if (s.length() == 0) return false;
-    for (int i = 0; i < (int)s.length(); i++) {
-        if (s[i] < '0' || s[i] > '9') {
+    for (int i = 0; i < (int)s.length(); i++) 
+	{
+        if (s[i] < '0' || s[i] > '9') 
+		{
             return false;
         }
     }
@@ -128,14 +145,16 @@ bool isAllDigits(string s) {
 }
 
 // IC NUMBER RULE: must be exactly 12 digits.
-bool isValidIC(string ic) {
+bool isValidIC(string ic) 
+{
     return isAllDigits(ic) && (int)ic.length() == 12;
 }
 
 // PHONE NUMBER RULE: must be numeric and BELOW 12 digits (i.e. 9-11 digits).
 // Lower bound of 9 is a reasonable real-world minimum (assumption - tell
 // me if you want a different minimum).
-bool isValidPhone(string phone) {
+bool isValidPhone(string phone) 
+{
     return isAllDigits(phone) && (int)phone.length() >= 9 && (int)phone.length() < 12;
 }
 
@@ -154,16 +173,19 @@ bool isValidEmail(string email)
 // Converts "SemX-YYYY" into a single comparable integer key, e.g.
 // "Sem1-2024" -> 20241. Used for sorting grade records by semester
 // without needing any date library.
-int semesterToKey(string semester) {
+int semesterToKey(string semester) 
+{
     int i = 3; // skip the literal "Sem"
     string semPart = "";
-    while (i < (int)semester.length() && semester[i] != '-') {
+    while (i < (int)semester.length() && semester[i] != '-') 
+	{
         semPart += semester[i];
         i++;
     }
     i++; // skip '-'
     string yearPart = "";
-    while (i < (int)semester.length()) {
+    while (i < (int)semester.length()) 
+	{
         yearPart += semester[i];
         i++;
     }
@@ -215,7 +237,8 @@ struct Course {
 // =====================================================================
 // BASE CLASS 1: Person
 // =====================================================================
-class Person {
+class Person 
+{
 protected:
     string id;
     string name;
@@ -243,13 +266,15 @@ public:
     friend bool validatePassword(Person &p, string inputPassword); // friend #1
 };
 
-Person::Person() {
+Person::Person() 
+{
     id = "";
     name = "";
     password = "";
 }
 
-Person::Person(string id, string name, string password, string phone, string email) {
+Person::Person(string id, string name, string password, string phone, string email) 
+{
     this->id = id;
     this->name = name;
     this->password = password;
@@ -257,15 +282,18 @@ Person::Person(string id, string name, string password, string phone, string ema
     contact.email = email;
 }
 
-Person::~Person() {
+Person::~Person() 
+{
     // nothing dynamic at this level - derived classes handle their own cleanup
 }
 
-bool Person::login(string inputID, string inputPassword) {
+bool Person::login(string inputID, string inputPassword) 
+{
     return (id == inputID && password == inputPassword);
 }
 
-void Person::displayProfile() {
+void Person::displayProfile() 
+{
     cout << "ID: " << id << ", Name: " << name << endl;
 }
 
@@ -280,14 +308,16 @@ void Person::setEmail(string e)    { contact.email = e; }
 void Person::setPassword(string p) { password = p; }
 void Person::setName(string n)     { name = n; }
 
-bool validatePassword(Person &p, string inputPassword) {
+bool validatePassword(Person &p, string inputPassword) 
+{
     return p.password == inputPassword; // friend accessing protected member directly
 }
 
 // =====================================================================
 // BASE CLASS 2: AcademicRecord
 // =====================================================================
-class AcademicRecord {
+class AcademicRecord 
+{
 protected:
     string courseCode;
     string courseName;
@@ -306,22 +336,26 @@ public:
     friend void exportRecordToFile(AcademicRecord &rec, ofstream &outFile); // friend #2
 };
 
-AcademicRecord::AcademicRecord() {
+AcademicRecord::AcademicRecord() 
+{
     courseCode = "";
     courseName = "";
     credit = 0;
 }
 
-AcademicRecord::AcademicRecord(string code, string name, int credit) {
+AcademicRecord::AcademicRecord(string code, string name, int credit) 
+{
     courseCode = code;
     courseName = name;
     this->credit = credit;
 }
 
-AcademicRecord::~AcademicRecord() {
+AcademicRecord::~AcademicRecord() 
+{
 }
 
-void AcademicRecord::displayRecord() {
+void AcademicRecord::displayRecord() 
+{
     cout << courseCode << " - " << courseName << " (" << credit << " credit(s))" << endl;
 }
 
@@ -329,8 +363,8 @@ string AcademicRecord::getCourseCode() const { return courseCode; }
 string AcademicRecord::getCourseName() const { return courseName; }
 int AcademicRecord::getCredit() const        { return credit; }
 
-void exportRecordToFile(AcademicRecord &rec, ofstream &outFile) {
-    outFile << rec.courseCode << "|" << rec.courseName << "|" << rec.credit;
+void exportRecordToFile(AcademicRecord &rec, ofstream &outFile) 
+{	outFile << rec.courseCode << "|" << rec.courseName << "|" << rec.credit;
 }
 
 // =====================================================================
