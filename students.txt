@@ -10,3 +10,41 @@ S009|Muhammad Rizwan|010909146673|rizwan@email.com|rizPC|0123334455|CS|September
 S015|Stephanie Wong|021230104452|steph@email.com|wong999|0157778899|SE|September2023
 S016|LIU JIUN LE|060203010343|LIU.JIUN.LE@student.mmu.edu.my|abc123|01123366716|IT|September2026
 S017|zhejun|090801011998|zhejun@gmail.com|0000|1234567890|IT|September2026
+S018|Ahmad Faisal|020515031123|faisal@email.com|faisal77|0124455667|CS|March2024
+S019|Grace Ng Hui Ling|031120140224|grace.ng@email.com|grace99|0178899001|SE|September2023
+S020|Kamal bin Idris|010418085531|kamal.idris@email.com|kamal88|0132233445|IT|March2024
+S021|Tan Jia Xin|020809016642|jiaxin@email.com|jx2024|0167788990|CS|September2023
+S022|Ravin Tharan|011205106673|ravin@email.com|ravin321|0115566778|SE|March2024
+S023|Chloe Wong|030125075542|chloe.w@email.com|chloe123|0193344556|IT|September2023
+S024|Syed Omar|020311145537|omar.syed@email.com|omar786|0142233112|CS|March2024
+S025|Teoh Beng Hong|010722025531|benghong@email.com|teoh888|0189988776|IT|September2023
+S026|Nisha Kumari|030514106642|nisha@email.com|nisha99|0127766554|SE|March2024
+S027|Lee Min Ho|020618015579|minho@email.com|oppa123|0116655443|CS|September2023
+S028|Anis Suraya|011002036612|anis.s@email.com|anis2024|0139988776|IT|March2024
+S029|Darren Tan|030912145561|darren@email.com|darren77|0173344552|SE|September2023
+S030|Nurul Izzah|020228086642|izzah@email.com|nurul99|0162233441|CS|March2024
+S031|Jason Choong|010519075531|jason.c@email.com|jason88|0195544332|IT|September2023
+S032|Ling Shing Yee|031201146652|shingyee@email.com|ling123|0187766554|SE|March2024
+S033|Amirul Ashraf|020412035513|amirul@email.com|ashraf7|0113344556|CS|September2023
+S034|Michelle Low|010824105562|michelle@email.com|mlow2024|0146655443|IT|March2024
+S035|Vikneswaran|030215146673|viknes@email.com|vik789|0129988775|SE|September2023
+S036|Farah Diana|021105015542|farah@email.com|diana99|0135544331|CS|March2024
+S037|Kevin Wijaya|010329026631|kevin@email.com|kevin123|0176655442|IT|September2023
+S038|Rachel Lim|030708145592|rachel@email.com|rach2024|0169988774|SE|March2024
+S039|Hafizuddin|020914035573|hafiz@email.com|hafiz88|0112233449|CS|September2023
+S040|Amanda Ng|011219085542|amanda@email.com|amanda77|0183344551|IT|March2024
+S041|Daniel Fong|030402146611|daniel@email.com|fong123|0197766553|SE|September2023
+S042|Siti Aishah|020111035562|aishah.s@email.com|siti999|0125544339|CS|March2024
+S043|Ryan Yeoh|010615075511|ryan@email.com|ryan2024|0172233448|IT|September2023
+S044|Divya Pillai|031022146682|divya@email.com|divya789|0163344557|SE|March2024
+S045|Zulhilmi|020827085531|zul@email.com|zulhilmi1|0119988773|CS|September2023
+S046|Emily Tan|010203105542|emily@email.com|emily88|0182233447|IT|March2024
+S047|Marcus Low|030526146631|marcus@email.com|marcus77|0196655441|SE|September2023
+S048|Nadia Mansor|021214015562|nadia@email.com|nadia99|0132233446|CS|March2024
+S049|Gary Seong|010905075591|gary@email.com|gary123|0179988772|IT|September2023
+S050|Priya Mohan|030318146622|priya@email.com|priya2024|0165544338|SE|March2024
+S051|Khairul Anwar|020719035581|khairul@email.com|anwar88|0115544337|CS|September2023
+S052|Tiffany Chew|011130085512|tiffany@email.com|tiff777|0186655449|IT|March2024
+S053|Justin Bieber|030101149999|justin@email.com|jb2024|0123344551|SE|September2023
+S054|Aina Syazwani|020522035542|aina@email.com|aina99|0137766552|CS|March2024
+S055|Bryan Ho|010411075531|bryan@email.com|bryan123|0172233446|IT|September2023
