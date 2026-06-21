@@ -201,18 +201,31 @@ int semesterToKey(string semester)
 // Returns -1.0 for non-graded entries (e.g. "Pending") so they can be
 // excluded from GPA calculations and sorted to the bottom.
 double gradeToGPA(string grade) {
-    if (grade == "A+" || grade == "A")  return 4.00;
-    if (grade == "A-")                  return 3.67;
-    if (grade == "B+")                  return 3.33;
-    if (grade == "B")                   return 3.00;
-    if (grade == "B-")                  return 2.67;
-    if (grade == "C+")                  return 2.33;
-    if (grade == "C")                   return 2.00;
-    if (grade == "C-")                  return 1.67;
-    if (grade == "D+")                  return 1.33;
-    if (grade == "D")                   return 1.00;
-    if (grade == "D-")                  return 0.67;
-    if (grade == "F")                   return 0.00;
+    if (grade == "A+" || grade == "A")  
+    return 4.00;
+    if (grade == "A-")                 
+     return 3.67;
+    if (grade == "B+")                  
+    return 3.33;
+    if (grade == "B")                  
+     return 3.00;
+    if (grade == "B-")                 
+     return 2.67;
+    if (grade == "C+")                 
+     return 2.33;
+    if (grade == "C")                  
+     return 2.00;
+    if (grade == "C-")                 
+     return 1.67;
+    if (grade == "D+")                
+      return 1.33;
+    if (grade == "D")                 
+      return 1.00;
+    if (grade == "D-")                 
+     return 0.67;
+    if (grade == "F")                  
+     return 0.00;
+
     return -1.00; // "Pending" or unrecognised
 }
 
@@ -408,14 +421,7 @@ GradeEntry::GradeEntry(string sid, string code, string name, int credit, string 
 }
 
 void GradeEntry::displayRecord() {
-    cout << left
-     << setw(10) << getCourseCode()
-     << setw(30) << getCourseName()
-     << setw(5)  << getCredit()
-     << setw(12) << "credit(s)"
-     << setw(8)  << grade
-     << term.semester
-     << endl;
+    cout << left << setw(10) << getCourseCode() << setw(30) << getCourseName() << setw(5)  << getCredit() << setw(12) << "credit(s)" << setw(8)  << grade << term.semester << endl;
 }
 
 string GradeEntry::getStudentID() const { return studentID; }
@@ -424,14 +430,7 @@ void GradeEntry::setGrade(string g)     { grade = g; }
 DateInfo GradeEntry::getTerm() const    { return term; }
 
 void printGradeDetails(GradeEntry &g) {
-    cout << left
-     << setw(12) << g.studentID
-     << setw(12) << g.courseCode
-     << setw(35) << g.courseName
-     << setw(8)  << g.credit
-     << setw(10) << g.grade
-     << setw(15) << g.term.semester
-     << endl;
+    cout << left << setw(12) << g.studentID << setw(12) << g.courseCode << setw(35) << g.courseName << setw(8)  << g.credit << setw(10) << g.grade << setw(15) << g.term.semester << endl;
 }
 
 // =====================================================================
@@ -686,13 +685,7 @@ string Staff::getDepartment() const { return department; }
 string Staff::getPosition() const   { return position; }
 
 void printStaffDetails(Staff &s) {
-    cout << left
-         << setw(10) << s.id
-         << setw(20) << s.name
-         << setw(12) << s.role
-         << setw(18) << s.department
-         << setw(18) << s.position
-         << endl;
+    cout << left << setw(10) << s.id << setw(20) << s.name << setw(12) << s.role << setw(18) << s.department << setw(18) << s.position << endl;
 }
 
 // =====================================================================
@@ -1036,9 +1029,7 @@ void appendStudentToFile(Student* s) {
     if (needsLeadingNewline) {
         outFile << endl;
     }
-    outFile << s->getID() << "|" << s->getName() << "|" << s->getIC() << "|"
-            << s->getEmail() << "|" << s->getPassword() << "|" << s->getPhone() << "|"
-            << s->getProgram() << "|" << s->getIntake() << endl;
+    outFile << s->getID() << "|" << s->getName() << "|" << s->getIC() << "|" << s->getEmail() << "|" << s->getPassword() << "|" << s->getPhone() << "|" << s->getProgram() << "|" << s->getIntake() << endl;
     outFile.close();
 }
 
@@ -1143,24 +1134,13 @@ void generateStudentReport(Student* s) {
     outFile << "Program    : " << s->getProgram() << endl;
     outFile << "============================================================" << endl;
 
-    outFile << left
-            << setw(10) << "Code"
-            << setw(25) << "Course Name"
-            << setw(8)  << "Credit"
-            << setw(10) << "Grade"
-            << setw(15) << "Semester" << endl;
+    outFile << left << setw(10) << "Code" << setw(25) << "Course Name" << setw(8)  << "Credit" << setw(10) << "Grade" << setw(15) << "Semester" << endl;
 
     outFile << "============================================================" << endl;
 
     for (int i = 0; i < n; i++) 
     {
-        outFile << left
-                << setw(10) << tempArr[i].getCourseCode()
-                << setw(25) << tempArr[i].getCourseName()
-                << setw(8)  << tempArr[i].getCredit()
-                << setw(10) << tempArr[i].getGrade()
-                << setw(15) << tempArr[i].getTerm().semester
-                << endl;
+        outFile << left << setw(10) << tempArr[i].getCourseCode() << setw(25) << tempArr[i].getCourseName() << setw(8)  << tempArr[i].getCredit() << setw(10) << tempArr[i].getGrade() << setw(15) << tempArr[i].getTerm().semester << endl;
 
         double gpaPoint = gradeToGPA(tempArr[i].getGrade());
 
